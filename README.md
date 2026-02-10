@@ -113,19 +113,11 @@ oc new-project aap-monitoring
 ```
 
 - Using the **WebConsole**, in the left side menu, select **OperatorHub** and then in the search field, search for **Grafana Operator**.
-- Make sure to change the project context to **aap-monitoring** at the top.
 - Click on the operator, click on **Install**.
-
-![](images/01.png)
-
-&nbsp;
-
 - In **Update Channel**, select **v5**
-- In **Installation Mode**, select **A specific namespace on the cluster** and choose **aap-monitoring** below.
+- In **Installation Mode**, select **All namespaces on the cluster**.
 - In **Update approval**, select **Automatic**
 - Click **Install**.
-
-![](images/02.png)
 
 &nbsp;
 
