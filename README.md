@@ -95,8 +95,6 @@ oc -n openshift-monitoring patch configmap cluster-monitoring-config -p '{"data"
 ```shell
 oc get pods -n openshift-user-workload-monitoring
 NAME                                                   READY   STATUS    RESTARTS   AGE
-grafana-deployment-6847648746-4mbn9                    1/1     Running   0          95m
-grafana-operator-controller-manager-7f74d54f44-58pwk   1/1     Running   0          6h55m
 prometheus-operator-cf59f9bdc-t7nvm                    2/2     Running   0          7h6m
 prometheus-user-workload-0                             6/6     Running   0          7h6m
 prometheus-user-workload-1                             6/6     Running   0          7h6m
@@ -108,8 +106,14 @@ thanos-ruler-user-workload-1                           4/4     Running   0      
 
 ### **Install Grafana Operator**
 
+- First, create the **aap-monitoring** project where Grafana and its resources will be deployed:
+
+```shell
+oc new-project aap-monitoring
+```
+
 - Using the **WebConsole**, in the left side menu, select **OperatorHub** and then in the search field, search for **Grafana Operator**.
-- Make sure to change the project context to **openshift-user-workload-monitoring** at the top.
+- Make sure to change the project context to **aap-monitoring** at the top.
 - Click on the operator, click on **Install**.
 
 ![](images/01.png)
@@ -117,7 +121,7 @@ thanos-ruler-user-workload-1                           4/4     Running   0      
 &nbsp;
 
 - In **Update Channel**, select **v5**
-- In **Installation Mode**, select **A specific namespace on the cluster** and choose **openshift-user-workload-monitoring** below.
+- In **Installation Mode**, select **A specific namespace on the cluster** and choose **aap-monitoring** below.
 - In **Update approval**, select **Automatic**
 - Click **Install**.
 
@@ -128,10 +132,6 @@ thanos-ruler-user-workload-1                           4/4     Running   0      
 - Now let's set up the RBAC and secrets required for the Grafana instance. The Grafana Operator will automatically create a `grafana-sa` service account. We need to grant it permissions for OAuth authentication and metrics access.
 
 > **Note:** Instead of using a username/password, we use the OpenShift OAuth proxy to authenticate users with their existing OpenShift credentials.
-
-```shell
-oc project openshift-user-workload-monitoring
-```
 
 - Create the RBAC resources for OAuth proxy authentication:
 
@@ -160,7 +160,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: grafana-proxy
-  namespace: openshift-user-workload-monitoring
+  namespace: aap-monitoring
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -168,7 +168,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: grafana-sa
-    namespace: openshift-user-workload-monitoring
+    namespace: aap-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -181,7 +181,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: grafana-sa
-    namespace: openshift-user-workload-monitoring
+    namespace: aap-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -194,7 +194,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: grafana-sa
-    namespace: openshift-user-workload-monitoring
+    namespace: aap-monitoring
 EOF
 ```
 
@@ -207,7 +207,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: grafana-proxy
-  namespace: openshift-user-workload-monitoring
+  namespace: aap-monitoring
 data:
   session_secret: $(openssl rand -base64 43 | base64 -w 0)
 type: Opaque
@@ -216,7 +216,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: grafana-auth-secret
-  namespace: openshift-user-workload-monitoring
+  namespace: aap-monitoring
   annotations:
     kubernetes.io/service-account.name: grafana-sa
 type: kubernetes.io/service-account-token
@@ -346,7 +346,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ocp-injected-certs
-  namespace: openshift-user-workload-monitoring
+  namespace: aap-monitoring
   labels:
     config.openshift.io/inject-trusted-cabundle: "true"
 EOF
@@ -357,9 +357,9 @@ EOF
 - Let's apply and validate our created Instance:
 
 ```shell
-oc -n openshift-user-workload-monitoring create -f grafana-instance.yaml
+oc -n aap-monitoring create -f grafana-instance.yaml
 
-oc -n openshift-user-workload-monitoring get pods -l app=grafana
+oc -n aap-monitoring get pods -l app=grafana
 ```
 
 &nbsp;
@@ -367,7 +367,7 @@ oc -n openshift-user-workload-monitoring get pods -l app=grafana
 - The Route is created automatically by the Grafana CR. Display it with:
 
 ```shell
-oc -n openshift-user-workload-monitoring get route grafana-route -o jsonpath='{.spec.host}'
+oc -n aap-monitoring get route grafana-route -o jsonpath='{.spec.host}'
 ```
 &nbsp;
 
@@ -379,7 +379,7 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
   name: grafana-ds
-  namespace: openshift-user-workload-monitoring
+  namespace: aap-monitoring
 spec:
   valuesFrom:
     - targetPath: "secureJsonData.httpHeaderValue1"
@@ -411,9 +411,9 @@ EOF
 - Let's apply and validate our created Datasource
 
 ```shell
-oc -n openshift-user-workload-monitoring create -f grafana-datasource.yaml
+oc -n aap-monitoring create -f grafana-datasource.yaml
 
-oc -n openshift-user-workload-monitoring get GrafanaDatasource
+oc -n aap-monitoring get GrafanaDatasource
 NAME         NO MATCHING INSTANCES   LAST RESYNC   AGE
 grafana-ds                           119s          3d23h
 ```
@@ -517,13 +517,13 @@ aap-monitor   31m
 - Now let's apply the AAP Grafana dashboard. The dashboard YAML file with the full JSON embedded is available at `common/base/dashboards/grafana-aap-dashboard.yaml`.
 
 ```shell
-oc -n openshift-user-workload-monitoring apply -f common/base/dashboards/grafana-aap-dashboard.yaml
+oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-dashboard.yaml
 ```
 
 - Validate our created GrafanaDashboard:
 
 ```shell
-oc -n openshift-user-workload-monitoring get grafanadashboard
+oc -n aap-monitoring get grafanadashboard
 NAME                    NO MATCHING INSTANCES   LAST RESYNC   AGE
 grafana-dashboard-aap                           3s            145m
 ```
