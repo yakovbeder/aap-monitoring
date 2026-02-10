@@ -880,7 +880,7 @@ spec:
             "fillGradient": 0,
             "gridPos": {
               "h": 6,
-              "w": 10,
+              "w": 14,
               "x": 7,
               "y": 8
             },
@@ -1065,8 +1065,8 @@ spec:
             },
             "gridPos": {
               "h": 6,
-              "w": 7,
-              "x": 17,
+              "w": 3,
+              "x": 21,
               "y": 8
             },
             "id": 20,
@@ -1138,19 +1138,6 @@ spec:
                 "legendFormat": "Remaining",
                 "range": true,
                 "refId": "D"
-              },
-              {
-                "datasource": {
-                  "type": "prometheus"
-                },
-                "editorMode": "code",
-                "exemplar": true,
-                "expr": "sum(awx_instance_consumed_capacity{job=~\"$service\",pod=~\"$pod\"})",
-                "hide": false,
-                "interval": "",
-                "legendFormat": "Consumed",
-                "range": true,
-                "refId": "E"
               }
             ],
             "title": "Capacity",
