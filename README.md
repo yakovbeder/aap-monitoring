@@ -2,7 +2,7 @@
 
 &nbsp;
 
-> This article is based on the amazing article and dashboard of **Leonardo Araujo**, adjusted to match Ansible Automation Platform 2.5+ and with additional metrics added.
+> This article is based on the amazing work by **Leonardo Araujo**, adjusted for Ansible Automation Platform 2.5+ with additional metrics and dashboard panels.
 >
 > Original repositories reside here:
 > - [Article](https://github.com/leoaaraujo/articles/blob/master/aap-openshift-monitoring/ARTICLE.md)
