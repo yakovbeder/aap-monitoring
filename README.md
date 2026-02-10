@@ -266,7 +266,7 @@ spec:
                 name: ocp-injected-certs
           containers:
             - name: grafana-proxy
-              image: "quay.io/openshift/origin-oauth-proxy"
+              image: "registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:v4.20"  # Update tag to match your OCP version
               args:
                 - "-provider=openshift"
                 - "-pass-basic-auth=false"
@@ -569,13 +569,22 @@ oc apply -k overlays/aap-grafana/servicemonitor/
 oc apply -k overlays/aap-grafana/dashboards/
 ```
 
-> **Important:** Before deploying to production, update the session secret in `common/base/core/session-secret.yaml`:
+> **Important:** Before deploying to production:
 >
-> ```shell
-> openssl rand -base64 43 | base64 -w 0
-> ```
+> 1. Update the OAuth proxy image tag in `common/base/core/grafana.yaml` to match your OpenShift version. For example, if you are running OpenShift 4.18, change the image to:
+>    ```
+>    registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:v4.18
+>    ```
+>    If the Red Hat image is not accessible in your environment, use the upstream image instead:
+>    ```
+>    quay.io/openshift/origin-oauth-proxy
+>    ```
 >
-> Replace the `session_secret` value with the generated output.
+> 2. Update the session secret in `common/base/core/session-secret.yaml`:
+>    ```shell
+>    openssl rand -base64 43 | base64 -w 0
+>    ```
+>    Replace the `session_secret` value with the generated output.
 
 
 ## **Conclusion**
