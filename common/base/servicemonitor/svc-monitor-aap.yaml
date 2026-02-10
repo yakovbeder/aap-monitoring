@@ -1,0 +1,23 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: aap-monitor
+  namespace: aap
+spec:
+  endpoints:
+  - interval: 30s
+    scrapeTimeout: 10s
+    honor_labels: true
+    path: /api/controller/v2/metrics/
+    port: http
+    scheme: http
+    bearerTokenSecret:
+      key: token
+      name: aap-monitor-creds
+  namespaceSelector:
+    matchNames:
+    - aap
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: aap

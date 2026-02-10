@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    openshift.io/description: Project for deploying Grafana for AAP Monitoring
+    openshift.io/display-name: AAP Grafana Monitoring
+  name: aap-monitoring

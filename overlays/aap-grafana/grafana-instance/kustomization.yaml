@@ -1,0 +1,33 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: aap-monitoring
+
+resources:
+  - ../../../common/base/core
+
+patches:
+  - patch: |-
+      - op: add
+        path: /spec/config/users
+        value:
+          auto_assign_org: 'true'
+          auto_assign_org_id: '1'
+          auto_assign_org_role: Admin
+    target:
+      group: grafana.integreatly.org
+      version: v1beta1
+      kind: Grafana
+  - patch: |-
+      - op: add
+        path: /spec/valuesFrom
+        value:
+          - targetPath: "secureJsonData.httpHeaderValue1"
+            valueFrom:
+              secretKeyRef:
+                name: grafana-auth-secret
+                key: token
+    target:
+      kind: GrafanaDatasource
+      name: prometheus-grafanadatasource
