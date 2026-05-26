@@ -840,7 +840,7 @@ spec:
             "datasource": { "type": "prometheus" },
             "description": "Number of automation jobs currently executing across all controller instances.",
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] } }, "overrides": [] },
-            "gridPos": { "h": 5, "w": 8, "x": 0, "y": 21 },
+            "gridPos": { "h": 5, "w": 5, "x": 0, "y": 21 },
             "id": 131,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
             "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_running_jobs_total{namespace=~\"$namespace\",job=~\"$service\"})", "instant": false, "legendFormat": "Running", "range": true, "refId": "A" }],
@@ -851,7 +851,7 @@ spec:
             "datasource": { "type": "prometheus" },
             "description": "Jobs waiting in the queue to be picked up by a controller task worker. High pending count may indicate capacity issues.",
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "yellow", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 20 }] } }, "overrides": [] },
-            "gridPos": { "h": 5, "w": 8, "x": 8, "y": 21 },
+            "gridPos": { "h": 5, "w": 5, "x": 5, "y": 21 },
             "id": 132,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
             "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_pending_jobs_total{namespace=~\"$namespace\",job=~\"$service\"})", "instant": false, "legendFormat": "Pending", "range": true, "refId": "A" }],
@@ -862,11 +862,66 @@ spec:
             "datasource": { "type": "prometheus" },
             "description": "Total number of jobs that ended in 'failed' or 'error' status. A rising count may indicate playbook issues or infrastructure problems.",
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 20 }] } }, "overrides": [] },
-            "gridPos": { "h": 5, "w": 8, "x": 16, "y": 21 },
+            "gridPos": { "h": 5, "w": 5, "x": 10, "y": 21 },
             "id": 133,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
             "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"failed\"}) + sum(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"error\"})", "instant": false, "legendFormat": "Failed", "range": true, "refId": "A" }],
             "title": "Failed Jobs",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Detects potentially stuck jobs: running jobs whose count has not changed in the last hour. If jobs are flowing normally (starting and finishing), this stays at 0. A non-zero value means the same jobs have been running for over an hour without progress.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [
+                  { "options": { "0": { "color": "green", "index": 0, "text": "None" } }, "type": "value" }
+                ],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "red", "value": 1 }
+                  ]
+                },
+                "noValue": "None"
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 5, "w": 5, "x": 15, "y": 21 },
+            "id": 135,
+            "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_running_jobs_total{namespace=~\"$namespace\",job=~\"$service\"}) * (1 - clamp_max(sum(changes(awx_running_jobs_total{namespace=~\"$namespace\",job=~\"$service\"}[1h])), 1))", "instant": true, "legendFormat": "Stuck", "refId": "A" }],
+            "title": "Stuck Jobs (1h+)",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Jobs blocked by dependency constraints (e.g., waiting for a parent workflow node to complete). High blocked count may indicate workflow design issues or a failed upstream job holding the pipeline.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [
+                  { "options": { "0": { "color": "green", "index": 0, "text": "None" } }, "type": "value" }
+                ],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "yellow", "value": 1 },
+                    { "color": "red", "value": 10 }
+                  ]
+                },
+                "noValue": "None"
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 5, "w": 4, "x": 20, "y": 21 },
+            "id": 136,
+            "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(task_manager_tasks_blocked{namespace=~\"$namespace\",job=~\"$service\"})", "instant": false, "legendFormat": "Blocked", "range": true, "refId": "A" }],
+            "title": "Blocked Tasks",
             "type": "stat"
           },
           {
