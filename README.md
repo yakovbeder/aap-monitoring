@@ -572,13 +572,9 @@ grafana-dashboard-aap-health                           3s            1m
 
 - **AAP - Health & Monitoring** Dashboard
 
-![Components and Operators](images/health-01-components.png)
+![Health Dashboard - Components, Operators, Services, Jobs](images/health-dashboard-top.png)
 &nbsp;
-![Service Accessibility and Jobs Status](images/health-02-jobs.png)
-&nbsp;
-![Latency and Resource Health](images/health-04-resources.png)
-&nbsp;
-![Event Processing](images/health-05-events.png)
+![Health Dashboard - Latency, Resource Health, Event Processing](images/health-dashboard-bottom.png)
 
 &nbsp;
 
