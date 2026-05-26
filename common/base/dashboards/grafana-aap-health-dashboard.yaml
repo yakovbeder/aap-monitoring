@@ -840,7 +840,7 @@ spec:
             "datasource": { "type": "prometheus" },
             "description": "Number of automation jobs currently executing across all controller instances.",
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] } }, "overrides": [] },
-            "gridPos": { "h": 5, "w": 5, "x": 0, "y": 21 },
+            "gridPos": { "h": 5, "w": 4, "x": 0, "y": 21 },
             "id": 131,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
             "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_running_jobs_total{namespace=~\"$namespace\",job=~\"$service\"})", "instant": false, "legendFormat": "Running", "range": true, "refId": "A" }],
@@ -851,7 +851,7 @@ spec:
             "datasource": { "type": "prometheus" },
             "description": "Jobs waiting in the queue to be picked up by a controller task worker. High pending count may indicate capacity issues.",
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "yellow", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 20 }] } }, "overrides": [] },
-            "gridPos": { "h": 5, "w": 5, "x": 5, "y": 21 },
+            "gridPos": { "h": 5, "w": 4, "x": 4, "y": 21 },
             "id": 132,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
             "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_pending_jobs_total{namespace=~\"$namespace\",job=~\"$service\"})", "instant": false, "legendFormat": "Pending", "range": true, "refId": "A" }],
@@ -862,7 +862,7 @@ spec:
             "datasource": { "type": "prometheus" },
             "description": "Total number of jobs that ended in 'failed' or 'error' status. A rising count may indicate playbook issues or infrastructure problems.",
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 20 }] } }, "overrides": [] },
-            "gridPos": { "h": 5, "w": 5, "x": 10, "y": 21 },
+            "gridPos": { "h": 5, "w": 4, "x": 8, "y": 21 },
             "id": 133,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
             "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"failed\"}) + sum(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"error\"})", "instant": false, "legendFormat": "Failed", "range": true, "refId": "A" }],
@@ -889,7 +889,7 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 5, "w": 5, "x": 15, "y": 21 },
+            "gridPos": { "h": 5, "w": 4, "x": 12, "y": 21 },
             "id": 135,
             "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
             "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_running_jobs_total{namespace=~\"$namespace\",job=~\"$service\"}) * (1 - clamp_max(sum(changes(awx_running_jobs_total{namespace=~\"$namespace\",job=~\"$service\"}[1h])), 1))", "instant": true, "legendFormat": "Stuck", "refId": "A" }],
@@ -917,11 +917,30 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 5, "w": 4, "x": 20, "y": 21 },
+            "gridPos": { "h": 5, "w": 4, "x": 16, "y": 21 },
             "id": 136,
             "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
             "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(task_manager_tasks_blocked{namespace=~\"$namespace\",job=~\"$service\"})", "instant": false, "legendFormat": "Blocked", "range": true, "refId": "A" }],
             "title": "Blocked Tasks",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Percentage of total controller capacity (fork slots) currently consumed by running jobs. Yellow at 70%, red at 90% -- indicates the controller is running out of execution capacity.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [],
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 90 }] },
+                "unit": "percent"
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 5, "w": 4, "x": 20, "y": 21 },
+            "id": 137,
+            "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_instance_consumed_capacity{namespace=~\"$namespace\",job=~\"$service\"}) / clamp_min(sum(awx_instance_capacity{namespace=~\"$namespace\",job=~\"$service\"}), 1) * 100", "instant": false, "legendFormat": "Consumed %", "range": true, "refId": "A" }],
+            "title": "Consumed Capacity",
             "type": "stat"
           },
           {

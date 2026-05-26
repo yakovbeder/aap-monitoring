@@ -564,15 +564,21 @@ grafana-dashboard-aap-health                           3s            1m
 
 &nbsp;
 
-- Overview Dashboard
+- **AAP - Overview** Dashboard
 
 ![AAP - Overview Dashboard](images/overview-dashboard.png)
 
 &nbsp;
 
-- Health & Monitoring Dashboard
+- **AAP - Health & Monitoring** Dashboard
 
-![AAP - Health & Monitoring Dashboard](images/health-dashboard-full.png)
+![Components and Operators](images/health-01-components.png)
+&nbsp;
+![Service Accessibility and Jobs Status](images/health-02-jobs.png)
+&nbsp;
+![Latency and Resource Health](images/health-04-resources.png)
+&nbsp;
+![Event Processing](images/health-05-events.png)
 
 &nbsp;
 
