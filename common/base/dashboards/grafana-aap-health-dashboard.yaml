@@ -83,7 +83,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-gateway\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-gateway\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -131,7 +131,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-controller-web\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -179,7 +179,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-controller-task\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -227,7 +227,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-api\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -275,7 +275,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-web\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -323,7 +323,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-content\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -380,7 +380,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-api\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -428,7 +428,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -476,7 +476,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -524,7 +524,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -581,7 +581,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\".*-operator-controller-manager\"}) / sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\".*-operator-controller-manager\"})",
+                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\".*-operator-controller-manager\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\".*-operator-controller-manager\"}), 1)",
                 "instant": true,
                 "legendFormat": "",
                 "refId": "A"
@@ -601,7 +601,7 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Checks if the AAP web UI is reachable. Combines gateway and hub-web deployment readiness. If DOWN, users cannot access the AAP web interface.",
+            "description": "Checks if the AAP web UI is reachable via the platform gateway. The gateway is the single entry point for all AAP traffic. If DOWN, users cannot access any AAP interface.",
             "fieldConfig": {
               "defaults": {
                 "color": { "mode": "thresholds" },
@@ -634,7 +634,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "clamp_max(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-web|.*-controller-web|.*-gateway\"}), 1)",
+                "expr": "clamp_max(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-gateway\"}), 1)",
                 "instant": true,
                 "legendFormat": "UI",
                 "refId": "A"
