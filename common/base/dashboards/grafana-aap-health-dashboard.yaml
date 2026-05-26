@@ -971,42 +971,125 @@ spec:
             "gridPos": { "h": 1, "w": 24, "x": 0, "y": 43 },
             "id": 150,
             "panels": [],
-            "title": "Resource Usage",
+            "title": "Resource Health",
             "type": "row"
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "CPU usage rate per container in the AAP namespace, averaged over 15 minutes. Helps identify which component is consuming the most CPU.",
-            "aliasColors": {}, "bars": false, "dashLength": 10, "dashes": false, "fill": 2, "fillGradient": 5,
-            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 44 },
-            "hiddenSeries": false, "id": 151,
-            "legend": { "alignAsTable": true, "avg": false, "current": true, "hideEmpty": true, "hideZero": true, "max": false, "min": false, "rightSide": true, "show": true, "total": false, "values": true },
+            "description": "Highest CPU usage as a percentage of its configured limit across all containers. Green < 70%, Yellow 70-90%, Red > 90%. If red, a container is close to being CPU-throttled.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "yellow", "value": 70 },
+                    { "color": "red", "value": 90 }
+                  ]
+                },
+                "unit": "percent",
+                "decimals": 1,
+                "min": 0,
+                "max": 100,
+                "noValue": "N/A"
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 5, "w": 6, "x": 0, "y": 44 },
+            "id": 151,
+            "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "max(sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container!=\"POD\",container!=\"\"}[5m])) by (pod,container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\",resource=\"cpu\"}) by (pod,container) * 100)", "instant": true, "legendFormat": "", "refId": "A" }],
+            "title": "Peak CPU % of Limit",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Highest memory usage as a percentage of its configured limit across all containers. Green < 70%, Yellow 70-90%, Red > 90%. If red, a container risks being OOMKilled.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "yellow", "value": 70 },
+                    { "color": "red", "value": 90 }
+                  ]
+                },
+                "unit": "percent",
+                "decimals": 1,
+                "min": 0,
+                "max": 100,
+                "noValue": "N/A"
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 5, "w": 6, "x": 6, "y": 44 },
+            "id": 152,
+            "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "max(sum(container_memory_working_set_bytes{namespace=~\"$namespace\",container!=\"POD\",container!=\"\"}) by (pod,container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\",resource=\"memory\"}) by (pod,container) * 100)", "instant": true, "legendFormat": "", "refId": "A" }],
+            "title": "Peak Memory % of Limit",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Total CPU cores consumed by all containers in the AAP namespace.",
+            "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }, "decimals": 2, "noValue": "N/A" }, "overrides": [] },
+            "gridPos": { "h": 5, "w": 6, "x": 12, "y": 44 },
+            "id": 155,
+            "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container!=\"POD\",pod!=\"\"}[5m]))", "instant": false, "legendFormat": "CPU Cores", "range": true, "refId": "A" }],
+            "title": "Total CPU Cores Used",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Total working set memory consumed by all containers in the AAP namespace.",
+            "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }, "unit": "decbytes", "noValue": "N/A" }, "overrides": [] },
+            "gridPos": { "h": 5, "w": 6, "x": 18, "y": 44 },
+            "id": 156,
+            "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(container_memory_working_set_bytes{namespace=~\"$namespace\",container!=\"POD\",pod!=\"\"})", "instant": false, "legendFormat": "Memory", "range": true, "refId": "A" }],
+            "title": "Total Memory Used",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Top 5 containers by CPU usage as percentage of their limit. Only containers with configured limits are shown. Helps identify which component is closest to being throttled.",
+            "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 }, "overrides": [] },
+            "aliasColors": {}, "bars": false, "dashLength": 10, "dashes": false, "fill": 2, "fillGradient": 3,
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 49 },
+            "hiddenSeries": false, "id": 153,
+            "legend": { "alignAsTable": true, "avg": false, "current": true, "hideEmpty": true, "hideZero": true, "max": true, "min": false, "rightSide": true, "show": true, "total": false, "values": true },
             "lines": true, "linewidth": 1, "nullPointMode": "null", "percentage": false, "pointradius": 2, "points": false, "renderer": "flot",
-            "seriesOverrides": [{ "alias": "Value", "legend": false, "lines": false }],
-            "spaceLength": 10, "stack": false, "steppedLine": false,
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container!=\"POD\",pod!=\"\"}[15m])) by (container)", "legendFormat": "{{ container }}", "range": true, "refId": "A" }],
-            "thresholds": [], "timeRegions": [], "title": "CPU Usage",
-            "tooltip": { "shared": true, "sort": 0, "value_type": "individual" }, "type": "graph",
+            "seriesOverrides": [], "spaceLength": 10, "stack": false, "steppedLine": false,
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "topk(5, sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container!=\"POD\",container!=\"\"}[5m])) by (pod,container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\",resource=\"cpu\"}) by (pod,container) * 100)", "legendFormat": "{{ pod }}/{{ container }}", "range": true, "refId": "A" }],
+            "thresholds": [{ "colorMode": "warning", "fill": false, "line": true, "op": "gt", "value": 70, "yaxis": "left" }, { "colorMode": "critical", "fill": false, "line": true, "op": "gt", "value": 90, "yaxis": "left" }],
+            "timeRegions": [], "title": "Top 5 CPU Consumers (% of Limit)",
+            "tooltip": { "shared": true, "sort": 2, "value_type": "individual" }, "type": "graph",
             "xaxis": { "mode": "time", "show": true, "values": [] },
-            "yaxes": [{ "decimals": 3, "format": "short", "logBase": 1, "show": true }, { "format": "short", "logBase": 1, "show": true }],
+            "yaxes": [{ "format": "percent", "logBase": 1, "show": true, "min": 0 }, { "format": "short", "logBase": 1, "show": false }],
             "yaxis": { "align": false }
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Working set memory per container in the AAP namespace. Shows actual memory in use (not cached). Helps identify memory-hungry components.",
-            "fieldConfig": { "defaults": { "unit": "decbytes" }, "overrides": [] },
-            "aliasColors": {}, "bars": false, "dashLength": 10, "dashes": false, "fill": 3, "fillGradient": 3,
-            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 44 },
-            "hiddenSeries": false, "id": 152,
-            "legend": { "alignAsTable": true, "avg": false, "current": true, "hideEmpty": true, "hideZero": true, "max": false, "min": false, "rightSide": true, "show": true, "sort": "current", "sortDesc": true, "total": false, "values": true },
-            "lines": true, "linewidth": 1, "nullPointMode": "null as zero", "percentage": false, "pointradius": 2, "points": false, "renderer": "flot",
-            "seriesOverrides": [{ "alias": "Value", "legend": false, "lines": false }],
-            "spaceLength": 10, "stack": false, "steppedLine": false,
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(container_memory_working_set_bytes{namespace=~\"$namespace\",container!=\"POD\",pod!=\"\"}) by (container)", "legendFormat": "{{ container }}", "range": true, "refId": "A" }],
-            "thresholds": [], "timeRegions": [], "title": "Memory Usage",
-            "tooltip": { "shared": true, "sort": 0, "value_type": "individual" }, "type": "graph",
+            "description": "Top 5 containers by memory usage as percentage of their limit. Only containers with configured limits are shown. Helps identify which component is closest to being OOMKilled.",
+            "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 }, "overrides": [] },
+            "aliasColors": {}, "bars": false, "dashLength": 10, "dashes": false, "fill": 2, "fillGradient": 3,
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 49 },
+            "hiddenSeries": false, "id": 154,
+            "legend": { "alignAsTable": true, "avg": false, "current": true, "hideEmpty": true, "hideZero": true, "max": true, "min": false, "rightSide": true, "show": true, "total": false, "values": true },
+            "lines": true, "linewidth": 1, "nullPointMode": "null", "percentage": false, "pointradius": 2, "points": false, "renderer": "flot",
+            "seriesOverrides": [], "spaceLength": 10, "stack": false, "steppedLine": false,
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "topk(5, sum(container_memory_working_set_bytes{namespace=~\"$namespace\",container!=\"POD\",container!=\"\"}) by (pod,container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\",resource=\"memory\"}) by (pod,container) * 100)", "legendFormat": "{{ pod }}/{{ container }}", "range": true, "refId": "A" }],
+            "thresholds": [{ "colorMode": "warning", "fill": false, "line": true, "op": "gt", "value": 70, "yaxis": "left" }, { "colorMode": "critical", "fill": false, "line": true, "op": "gt", "value": 90, "yaxis": "left" }],
+            "timeRegions": [], "title": "Top 5 Memory Consumers (% of Limit)",
+            "tooltip": { "shared": true, "sort": 2, "value_type": "individual" }, "type": "graph",
             "xaxis": { "mode": "time", "show": true, "values": [] },
-            "yaxes": [{ "format": "decbytes", "logBase": 1, "show": true }, { "format": "short", "logBase": 1, "show": true }],
+            "yaxes": [{ "format": "percent", "logBase": 1, "show": true, "min": 0 }, { "format": "short", "logBase": 1, "show": false }],
             "yaxis": { "align": false }
           },
           {
