@@ -1174,7 +1174,7 @@ spec:
             "xaxis": { "mode": "time", "show": true, "values": [] },
             "yaxes": [{ "format": "short", "logBase": 1, "show": true }, { "format": "short", "logBase": 1, "show": true }],
             "yaxis": { "align": false }
-          },
+          }
         ],
         "refresh": "30s",
         "schemaVersion": 37,
