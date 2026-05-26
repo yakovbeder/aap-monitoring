@@ -535,50 +535,68 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "AAP operators manage the lifecycle of all AAP components (install, upgrade, reconcile). Shows available vs desired replicas across all operator deployments.",
-            "fieldConfig": {
-              "defaults": {
-                "color": { "mode": "thresholds" },
-                "mappings": [
-                  { "options": { "0": { "color": "red", "index": 0, "text": "CRITICAL" } }, "type": "value" },
-                  { "options": { "1": { "color": "green", "index": 1, "text": "HEALTHY" } }, "type": "value" }
-                ],
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    { "color": "red", "value": null },
-                    { "color": "yellow", "value": 0.01 },
-                    { "color": "green", "value": 1 }
-                  ]
-                },
-                "unit": "percentunit",
-                "noValue": "N/A",
-                "min": 0,
-                "max": 1
-              },
-              "overrides": []
-            },
-            "gridPos": { "h": 4, "w": 24, "x": 0, "y": 10 },
+            "description": "Manages the AAP Gateway component lifecycle (install, upgrade, reconcile). The gateway is the single entry point for all platform traffic.",
+            "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [ { "options": { "0": { "color": "red", "index": 0, "text": "CRITICAL" } }, "type": "value" }, { "options": { "1": { "color": "green", "index": 1, "text": "HEALTHY" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "green", "value": 1 } ] }, "unit": "percentunit", "noValue": "N/A", "min": 0, "max": 1 }, "overrides": [] },
+            "gridPos": { "h": 4, "w": 4, "x": 0, "y": 10 },
             "id": 112,
-            "options": {
-              "colorMode": "background",
-              "graphMode": "none",
-              "justifyMode": "auto",
-              "orientation": "auto",
-              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-              "textMode": "auto"
-            },
-            "targets": [
-              {
-                "datasource": { "type": "prometheus" },
-                "editorMode": "code",
-                "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\".*-operator-controller-manager\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\".*-operator-controller-manager\"}), 1)",
-                "instant": true,
-                "legendFormat": "",
-                "refId": "A"
-              }
-            ],
-            "title": "AAP Operators",
+            "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}), 1)", "instant": true, "legendFormat": "", "refId": "A" }],
+            "title": "Gateway Operator",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Manages the Automation Controller lifecycle (controller-web, controller-task deployments). If this operator is down, controller cannot be upgraded or reconciled.",
+            "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [ { "options": { "0": { "color": "red", "index": 0, "text": "CRITICAL" } }, "type": "value" }, { "options": { "1": { "color": "green", "index": 1, "text": "HEALTHY" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "green", "value": 1 } ] }, "unit": "percentunit", "noValue": "N/A", "min": 0, "max": 1 }, "overrides": [] },
+            "gridPos": { "h": 4, "w": 4, "x": 4, "y": 10 },
+            "id": 200,
+            "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}), 1)", "instant": true, "legendFormat": "", "refId": "A" }],
+            "title": "Controller Operator",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Manages Automation Hub lifecycle (hub-api, hub-web, hub-content, hub-worker deployments). Required for content management operations.",
+            "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [ { "options": { "0": { "color": "red", "index": 0, "text": "CRITICAL" } }, "type": "value" }, { "options": { "1": { "color": "green", "index": 1, "text": "HEALTHY" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "green", "value": 1 } ] }, "unit": "percentunit", "noValue": "N/A", "min": 0, "max": 1 }, "overrides": [] },
+            "gridPos": { "h": 4, "w": 4, "x": 8, "y": 10 },
+            "id": 201,
+            "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}), 1)", "instant": true, "legendFormat": "", "refId": "A" }],
+            "title": "Hub Operator",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Manages Event-Driven Ansible lifecycle (eda-api, eda-scheduler, eda-workers). Required for EDA operations.",
+            "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [ { "options": { "0": { "color": "red", "index": 0, "text": "CRITICAL" } }, "type": "value" }, { "options": { "1": { "color": "green", "index": 1, "text": "HEALTHY" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "green", "value": 1 } ] }, "unit": "percentunit", "noValue": "N/A", "min": 0, "max": 1 }, "overrides": [] },
+            "gridPos": { "h": 4, "w": 4, "x": 12, "y": 10 },
+            "id": 202,
+            "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}), 1)", "instant": true, "legendFormat": "", "refId": "A" }],
+            "title": "EDA Operator",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Manages shared platform resources (PostgreSQL, Redis cluster, secrets). Critical for infrastructure reconciliation.",
+            "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [ { "options": { "0": { "color": "red", "index": 0, "text": "CRITICAL" } }, "type": "value" }, { "options": { "1": { "color": "green", "index": 1, "text": "HEALTHY" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "green", "value": 1 } ] }, "unit": "percentunit", "noValue": "N/A", "min": 0, "max": 1 }, "overrides": [] },
+            "gridPos": { "h": 4, "w": 4, "x": 16, "y": 10 },
+            "id": 203,
+            "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}), 1)", "instant": true, "legendFormat": "", "refId": "A" }],
+            "title": "Resource Operator",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Manages Ansible Lightspeed (AI assistant) lifecycle. Not critical for core AAP operations.",
+            "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [ { "options": { "0": { "color": "red", "index": 0, "text": "CRITICAL" } }, "type": "value" }, { "options": { "1": { "color": "green", "index": 1, "text": "HEALTHY" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "green", "value": 1 } ] }, "unit": "percentunit", "noValue": "N/A", "min": 0, "max": 1 }, "overrides": [] },
+            "gridPos": { "h": 4, "w": 4, "x": 20, "y": 10 },
+            "id": 204,
+            "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}), 1)", "instant": true, "legendFormat": "", "refId": "A" }],
+            "title": "Lightspeed Operator",
             "type": "stat"
           },
           {
