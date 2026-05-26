@@ -698,7 +698,7 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Checks if the PostgreSQL database StatefulSet has ready replicas. PostgreSQL stores all AAP configuration, job history, and inventory data. If DOWN, the entire platform is non-functional.",
+            "description": "Checks if the PostgreSQL database is reachable by verifying active database connections from the controller. Works with both cluster-internal and external (RDS, VM) PostgreSQL. If DOWN, the entire platform is non-functional.",
             "fieldConfig": {
               "defaults": {
                 "color": { "mode": "thresholds" },
@@ -731,7 +731,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "clamp_max(sum(kube_statefulset_status_replicas_ready{namespace=~\"$namespace\", statefulset=~\".*-postgres.*\"}), 1)",
+                "expr": "clamp_max(sum(awx_database_connections_total{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"}), 1)",
                 "instant": true,
                 "legendFormat": "PostgreSQL",
                 "refId": "A"
