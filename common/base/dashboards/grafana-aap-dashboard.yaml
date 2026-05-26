@@ -47,6 +47,19 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
+            "gridPos": { "h": 6, "w": 3, "x": 1, "y": 1 },
+            "id": 14,
+            "options": {
+              "content": "<div style=\"display:flex;align-items:center;justify-content:center;height:100%\"><img src=\"https://www.redhat.com/cms/managed-files/ansible-logo_0_0.png\" style=\"max-width:100%;max-height:100%;object-fit:contain\"></div>\n",
+              "mode": "html"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{ "datasource": { "type": "prometheus" }, "refId": "A" }],
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "datasource": { "type": "prometheus" },
             "description": "AAP Controller software version currently running.",
             "fieldConfig": {
               "defaults": {
@@ -56,7 +69,7 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 6, "w": 3, "x": 0, "y": 1 },
+            "gridPos": { "h": 3, "w": 2, "x": 5, "y": 1 },
             "id": 2,
             "options": {
               "colorMode": "background",
@@ -71,12 +84,9 @@ spec:
             "targets": [{
               "datasource": { "type": "prometheus" },
               "editorMode": "code",
-              "exemplar": true,
               "expr": "awx_instance_info{job=~\"$service\"}",
               "format": "table",
               "instant": true,
-              "interval": "",
-              "legendFormat": "",
               "refId": "A"
             }],
             "title": "Version",
@@ -93,7 +103,7 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 3, "w": 5, "x": 3, "y": 1 },
+            "gridPos": { "h": 3, "w": 5, "x": 7, "y": 1 },
             "id": 3,
             "options": {
               "colorMode": "value",
@@ -128,19 +138,10 @@ spec:
               },
               "overrides": [{
                 "matcher": { "id": "byName", "options": "insights_analytics" },
-                "properties": [{
-                  "id": "mappings",
-                  "value": [{
-                    "options": {
-                      "False": { "color": "blue", "index": 1 },
-                      "True": { "color": "green", "index": 0 }
-                    },
-                    "type": "value"
-                  }]
-                }]
+                "properties": [{ "id": "mappings", "value": [{ "options": { "False": { "color": "blue", "index": 1 }, "True": { "color": "green", "index": 0 } }, "type": "value" }] }]
               }]
             },
-            "gridPos": { "h": 3, "w": 3, "x": 8, "y": 1 },
+            "gridPos": { "h": 3, "w": 3, "x": 12, "y": 1 },
             "id": 12,
             "options": {
               "colorMode": "background",
@@ -174,7 +175,7 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 6, "w": 3, "x": 11, "y": 1 },
+            "gridPos": { "h": 6, "w": 3, "x": 15, "y": 1 },
             "id": 6,
             "options": {
               "colorMode": "background",
@@ -198,7 +199,7 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Remaining host slots available under the current license. If this reaches 0, no new hosts can be managed.",
+            "description": "Remaining host slots available under the current license.",
             "fieldConfig": {
               "defaults": {
                 "color": { "mode": "thresholds" },
@@ -210,7 +211,7 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 6, "w": 3, "x": 14, "y": 1 },
+            "gridPos": { "h": 6, "w": 3, "x": 18, "y": 1 },
             "id": 10,
             "options": {
               "colorMode": "background",
@@ -235,28 +236,20 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Percentage of licensed host slots currently in use. Yellow at 70%, red at 90% -- indicates license capacity pressure.",
+            "description": "Percentage of licensed host slots currently in use. Yellow at 70%, red at 90%.",
             "fieldConfig": {
               "defaults": {
                 "color": { "mode": "thresholds" },
                 "decimals": 0,
                 "mappings": [],
-                "max": 100,
-                "min": 0,
+                "max": 100, "min": 0,
                 "noValue": "0",
-                "thresholds": {
-                  "mode": "percentage",
-                  "steps": [
-                    { "color": "green", "value": null },
-                    { "color": "#EAB839", "value": 70 },
-                    { "color": "red", "value": 90 }
-                  ]
-                },
+                "thresholds": { "mode": "percentage", "steps": [{ "color": "green", "value": null }, { "color": "#EAB839", "value": 70 }, { "color": "red", "value": 90 }] },
                 "unit": "percent"
               },
               "overrides": []
             },
-            "gridPos": { "h": 6, "w": 3, "x": 17, "y": 1 },
+            "gridPos": { "h": 6, "w": 3, "x": 21, "y": 1 },
             "id": 8,
             "options": {
               "colorMode": "background",
@@ -281,7 +274,7 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Number of AAP controller instances reporting metrics. Reflects the scale of the controller deployment.",
+            "description": "Number of AAP controller instances reporting metrics.",
             "fieldConfig": {
               "defaults": {
                 "color": { "mode": "thresholds" },
@@ -290,7 +283,7 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 3, "w": 2, "x": 3, "y": 4 },
+            "gridPos": { "h": 3, "w": 2, "x": 5, "y": 4 },
             "id": 17,
             "options": {
               "colorMode": "background",
@@ -324,7 +317,7 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 3, "w": 5, "x": 5, "y": 4 },
+            "gridPos": { "h": 3, "w": 5, "x": 7, "y": 4 },
             "id": 4,
             "options": {
               "colorMode": "value",
@@ -349,7 +342,7 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Whether an external log aggregator (e.g., Splunk, ELK) is configured for this AAP instance.",
+            "description": "Whether an external log aggregator (e.g., Splunk, ELK) is configured.",
             "fieldConfig": {
               "defaults": {
                 "color": { "fixedColor": "rgb(255, 255, 255)", "mode": "thresholds" },
@@ -359,19 +352,10 @@ spec:
               },
               "overrides": [{
                 "matcher": { "id": "byName", "options": "external_logger_enabled" },
-                "properties": [{
-                  "id": "mappings",
-                  "value": [{
-                    "options": {
-                      "False": { "color": "blue", "index": 1 },
-                      "True": { "color": "green", "index": 0 }
-                    },
-                    "type": "value"
-                  }]
-                }]
+                "properties": [{ "id": "mappings", "value": [{ "options": { "False": { "color": "blue", "index": 1 }, "True": { "color": "green", "index": 0 } }, "type": "value" }] }]
               }]
             },
-            "gridPos": { "h": 3, "w": 3, "x": 8, "y": 4 },
+            "gridPos": { "h": 3, "w": 3, "x": 12, "y": 4 },
             "id": 15,
             "options": {
               "colorMode": "background",
@@ -406,7 +390,7 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Count of AAP identity objects: Users, Teams, Organizations, and currently active user sessions (Online Users).",
+            "description": "Count of AAP identity objects: Users, Teams, Organizations, and currently active user sessions.",
             "fieldConfig": {
               "defaults": {
                 "color": { "mode": "thresholds" },
@@ -415,7 +399,7 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 6, "w": 6, "x": 0, "y": 8 },
+            "gridPos": { "h": 6, "w": 7, "x": 0, "y": 8 },
             "id": 26,
             "options": {
               "colorMode": "value",
@@ -445,7 +429,7 @@ spec:
             "dashes": false,
             "fill": 1,
             "fillGradient": 0,
-            "gridPos": { "h": 6, "w": 12, "x": 6, "y": 8 },
+            "gridPos": { "h": 6, "w": 11, "x": 7, "y": 8 },
             "hiddenSeries": false,
             "id": 30,
             "legend": { "alignAsTable": true, "avg": false, "current": true, "hideEmpty": true, "hideZero": false, "max": false, "min": false, "rightSide": true, "show": true, "total": false, "values": true },
@@ -476,15 +460,12 @@ spec:
             "tooltip": { "shared": true, "sort": 0, "value_type": "individual" },
             "type": "graph",
             "xaxis": { "mode": "series", "show": true, "values": ["current"] },
-            "yaxes": [
-              { "format": "short", "logBase": 1, "show": true },
-              { "format": "short", "logBase": 1, "show": true }
-            ],
+            "yaxes": [{ "format": "short", "logBase": 1, "show": true }, { "format": "short", "logBase": 1, "show": true }],
             "yaxis": { "align": false }
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Controller instance capacity: CPU cores, memory, fork slots (max concurrent job processes), and remaining available capacity.",
+            "description": "Controller instance capacity: CPU cores, memory, fork slots, and remaining available capacity.",
             "fieldConfig": {
               "defaults": {
                 "color": { "mode": "thresholds" },
@@ -492,10 +473,7 @@ spec:
                 "noValue": "0",
                 "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
               },
-              "overrides": [{
-                "matcher": { "id": "byName", "options": "Memory" },
-                "properties": [{ "id": "unit", "value": "decbytes" }]
-              }]
+              "overrides": [{ "matcher": { "id": "byName", "options": "Memory" }, "properties": [{ "id": "unit", "value": "decbytes" }] }]
             },
             "gridPos": { "h": 6, "w": 3, "x": 18, "y": 8 },
             "id": 20,
@@ -525,14 +503,7 @@ spec:
               "defaults": {
                 "color": { "mode": "thresholds" },
                 "mappings": [],
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    { "color": "green", "value": null },
-                    { "color": "yellow", "value": 70 },
-                    { "color": "red", "value": 90 }
-                  ]
-                },
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 90 }] },
                 "unit": "percent"
               },
               "overrides": []
@@ -625,6 +596,6 @@ spec:
         "timezone": "",
         "title": "AAP - Overview",
         "uid": "",
-        "version": 7,
+        "version": 8,
         "weekStart": ""
       }

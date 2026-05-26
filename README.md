@@ -78,11 +78,6 @@ The "is everything working" dashboard. Monitors real-time health of all AAP comp
 
 Every panel includes a tooltip (?) explaining what it monitors and why it matters.
 
-#### Health Dashboard Screenshot
-
-![AAP - Health & Monitoring Dashboard](images/health-dashboard-full.png)
-
-
 ## **Repository Structure**
 
 ```
