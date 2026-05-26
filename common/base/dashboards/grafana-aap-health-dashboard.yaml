@@ -731,7 +731,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "clamp_max(sum(awx_database_connections_total{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"}), 1)",
+                "expr": "clamp_max(sum(awx_database_connections_total{namespace=~\"$namespace\"}), 1)",
                 "instant": true,
                 "legendFormat": "PostgreSQL",
                 "refId": "A"
@@ -843,7 +843,7 @@ spec:
             "gridPos": { "h": 5, "w": 8, "x": 0, "y": 21 },
             "id": 131,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_running_jobs_total{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"})", "instant": false, "legendFormat": "Running", "range": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_running_jobs_total{namespace=~\"$namespace\",job=~\"$service\"})", "instant": false, "legendFormat": "Running", "range": true, "refId": "A" }],
             "title": "Running Jobs",
             "type": "stat"
           },
@@ -854,7 +854,7 @@ spec:
             "gridPos": { "h": 5, "w": 8, "x": 8, "y": 21 },
             "id": 132,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_pending_jobs_total{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"})", "instant": false, "legendFormat": "Pending", "range": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_pending_jobs_total{namespace=~\"$namespace\",job=~\"$service\"})", "instant": false, "legendFormat": "Pending", "range": true, "refId": "A" }],
             "title": "Pending Jobs",
             "type": "stat"
           },
@@ -865,7 +865,7 @@ spec:
             "gridPos": { "h": 5, "w": 8, "x": 16, "y": 21 },
             "id": 133,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"failed\",pod=~\"$pod\"}) + sum(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"error\",pod=~\"$pod\"})", "instant": false, "legendFormat": "Failed", "range": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"failed\"}) + sum(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"error\"})", "instant": false, "legendFormat": "Failed", "range": true, "refId": "A" }],
             "title": "Failed Jobs",
             "type": "stat"
           },
@@ -879,14 +879,14 @@ spec:
             "legend": { "alignAsTable": true, "avg": false, "current": true, "hideEmpty": true, "hideZero": false, "max": false, "min": false, "rightSide": true, "show": true, "sort": "current", "sortDesc": true, "total": false, "values": true },
             "lines": true, "linewidth": 1, "nullPointMode": "connected", "percentage": false, "pointradius": 0.5, "points": false, "renderer": "flot", "seriesOverrides": [], "spaceLength": 10, "stack": false, "steppedLine": true,
             "targets": [
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"running\",pod=~\"$pod\"})", "legendFormat": "Running", "range": true, "refId": "A" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"successful\",pod=~\"$pod\"})", "legendFormat": "Successful", "range": true, "refId": "B" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"failed\",pod=~\"$pod\"})", "legendFormat": "Failed", "range": true, "refId": "C" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"error\",pod=~\"$pod\"})", "legendFormat": "Error", "range": true, "refId": "D" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"canceled\",pod=~\"$pod\"})", "legendFormat": "Canceled", "range": true, "refId": "E" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"pending\",pod=~\"$pod\"})", "legendFormat": "Pending", "range": true, "refId": "F" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"waiting\",pod=~\"$pod\"})", "legendFormat": "Waiting", "range": true, "refId": "G" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(task_manager_tasks_blocked{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Blocked", "range": true, "refId": "H" }
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"running\"})", "legendFormat": "Running", "range": true, "refId": "A" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"successful\"})", "legendFormat": "Successful", "range": true, "refId": "B" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"failed\"})", "legendFormat": "Failed", "range": true, "refId": "C" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"error\"})", "legendFormat": "Error", "range": true, "refId": "D" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"canceled\"})", "legendFormat": "Canceled", "range": true, "refId": "E" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"pending\"})", "legendFormat": "Pending", "range": true, "refId": "F" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_status_total{job=~\"$service\",status=\"waiting\"})", "legendFormat": "Waiting", "range": true, "refId": "G" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(task_manager_tasks_blocked{namespace=~\"$namespace\",job=~\"$service\"})", "legendFormat": "Blocked", "range": true, "refId": "H" }
             ],
             "thresholds": [], "timeRegions": [], "title": "Job Launched Statistics",
             "tooltip": { "shared": true, "sort": 0, "value_type": "individual" }, "type": "graph",
@@ -913,9 +913,9 @@ spec:
             "legend": { "alignAsTable": true, "avg": true, "current": true, "max": true, "min": false, "rightSide": false, "show": true, "total": false, "values": true },
             "lines": true, "linewidth": 2, "nullPointMode": "null", "percentage": false, "pointradius": 2, "points": false, "renderer": "flot", "seriesOverrides": [], "spaceLength": 10, "stack": false, "steppedLine": false,
             "targets": [
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_get_tasks_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "Loading Tasks", "range": true, "refId": "A" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_start_task_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "Starting Tasks", "range": true, "refId": "B" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(callback_receiver_event_processing_avg_seconds{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Event Processing Avg", "range": true, "refId": "C" }
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_get_tasks_seconds{namespace=~\"$namespace\"})", "legendFormat": "Loading Tasks", "range": true, "refId": "A" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_start_task_seconds{namespace=~\"$namespace\"})", "legendFormat": "Starting Tasks", "range": true, "refId": "B" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(callback_receiver_event_processing_avg_seconds{namespace=~\"$namespace\",job=~\"$service\"})", "legendFormat": "Event Processing Avg", "range": true, "refId": "C" }
             ],
             "thresholds": [], "timeRegions": [], "title": "Gateway / API Processing Time",
             "tooltip": { "shared": true, "sort": 0, "value_type": "individual" }, "type": "graph",
@@ -933,10 +933,10 @@ spec:
             "legend": { "alignAsTable": true, "avg": false, "current": true, "max": false, "min": false, "rightSide": false, "show": true, "total": false, "values": true },
             "lines": true, "linewidth": 1, "nullPointMode": "null", "percentage": false, "pointradius": 0.5, "points": false, "renderer": "flot", "seriesOverrides": [], "spaceLength": 10, "stack": false, "steppedLine": false,
             "targets": [
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_commit_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "DB Transactions", "range": true, "refId": "A" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(dependency_manager_get_tasks_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "Loading Pending Tasks", "range": true, "refId": "B" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(workflow_manager_get_tasks_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "Loading Workflow Tasks", "range": true, "refId": "C" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(callback_receiver_events_insert_db_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "Saving Events to DB", "range": true, "refId": "D" }
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_commit_seconds{namespace=~\"$namespace\"})", "legendFormat": "DB Transactions", "range": true, "refId": "A" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(dependency_manager_get_tasks_seconds{namespace=~\"$namespace\"})", "legendFormat": "Loading Pending Tasks", "range": true, "refId": "B" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(workflow_manager_get_tasks_seconds{namespace=~\"$namespace\"})", "legendFormat": "Loading Workflow Tasks", "range": true, "refId": "C" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(callback_receiver_events_insert_db_seconds{namespace=~\"$namespace\"})", "legendFormat": "Saving Events to DB", "range": true, "refId": "D" }
             ],
             "thresholds": [], "timeRegions": [], "title": "PostgreSQL Transaction Latency",
             "tooltip": { "shared": true, "sort": 0, "value_type": "individual" }, "type": "graph",
@@ -954,10 +954,10 @@ spec:
             "legend": { "alignAsTable": true, "avg": false, "current": true, "max": false, "min": false, "rightSide": false, "show": true, "total": false, "values": true },
             "lines": true, "linewidth": 1, "nullPointMode": "null", "percentage": false, "pointradius": 2, "points": false, "renderer": "flot", "seriesOverrides": [], "spaceLength": 10, "stack": false, "steppedLine": false,
             "targets": [
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_get_tasks_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "Loading Tasks", "range": true, "refId": "A" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_start_task_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "Starting Tasks", "range": true, "refId": "B" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_process_running_tasks_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "Processing Running", "range": true, "refId": "C" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_process_pending_tasks_seconds{namespace=~\"$namespace\",pod=~\"$pod\"})", "legendFormat": "Processing Pending", "range": true, "refId": "D" }
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_get_tasks_seconds{namespace=~\"$namespace\"})", "legendFormat": "Loading Tasks", "range": true, "refId": "A" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_start_task_seconds{namespace=~\"$namespace\"})", "legendFormat": "Starting Tasks", "range": true, "refId": "B" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_process_running_tasks_seconds{namespace=~\"$namespace\"})", "legendFormat": "Processing Running", "range": true, "refId": "C" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(task_manager_process_pending_tasks_seconds{namespace=~\"$namespace\"})", "legendFormat": "Processing Pending", "range": true, "refId": "D" }
             ],
             "thresholds": [], "timeRegions": [], "title": "Task Manager Execution Time",
             "tooltip": { "shared": true, "sort": 0, "value_type": "individual" }, "type": "graph",
@@ -1027,9 +1027,9 @@ spec:
             "legend": { "alignAsTable": true, "avg": false, "current": true, "hideEmpty": true, "hideZero": false, "max": false, "min": false, "rightSide": true, "show": true, "total": false, "values": true },
             "lines": true, "linewidth": 1, "nullPointMode": "null", "percentage": false, "pointradius": 2, "points": false, "renderer": "flot", "seriesOverrides": [], "spaceLength": 10, "stack": false, "steppedLine": false,
             "targets": [
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(callback_receiver_events_queue_size_redis{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Redis Queue Size", "range": true, "refId": "A" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(callback_receiver_events_in_memory{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Events In Memory", "range": true, "refId": "B" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(callback_receiver_event_processing_avg_seconds{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Avg Processing Time (s)", "range": true, "refId": "C" }
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(callback_receiver_events_queue_size_redis{namespace=~\"$namespace\",job=~\"$service\"})", "legendFormat": "Redis Queue Size", "range": true, "refId": "A" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(callback_receiver_events_in_memory{namespace=~\"$namespace\",job=~\"$service\"})", "legendFormat": "Events In Memory", "range": true, "refId": "B" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "avg(callback_receiver_event_processing_avg_seconds{namespace=~\"$namespace\",job=~\"$service\"})", "legendFormat": "Avg Processing Time (s)", "range": true, "refId": "C" }
             ],
             "thresholds": [], "timeRegions": [], "title": "Event Processing (Callback Receiver)",
             "tooltip": { "shared": true, "sort": 0, "value_type": "individual" }, "type": "graph",
@@ -1059,7 +1059,7 @@ spec:
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
             "gridPos": { "h": 3, "w": 4, "x": 3, "y": 62 }, "id": 172,
             "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^license_type$/", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "awx_system_info{job=~\"$service\",pod=~\"$pod\"}", "format": "table", "instant": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "awx_system_info{job=~\"$service\"}", "format": "table", "instant": true, "refId": "A" }],
             "title": "License Type", "type": "stat"
           },
           {
@@ -1067,7 +1067,7 @@ spec:
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }, "unit": "dtdurations" }, "overrides": [] },
             "gridPos": { "h": 3, "w": 4, "x": 7, "y": 62 }, "id": 173,
             "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^license_expiry$/", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "awx_system_info{job=~\"$service\",pod=~\"$pod\"}", "format": "table", "instant": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "awx_system_info{job=~\"$service\"}", "format": "table", "instant": true, "refId": "A" }],
             "title": "License Expiry", "type": "stat"
           },
           {
@@ -1075,7 +1075,7 @@ spec:
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
             "gridPos": { "h": 3, "w": 3, "x": 11, "y": 62 }, "id": 174,
             "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "awx_license_instance_total{job=~\"$service\",pod=~\"$pod\"}", "range": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "awx_license_instance_total{job=~\"$service\"}", "range": true, "refId": "A" }],
             "title": "Hosts Total", "type": "stat"
           },
           {
@@ -1083,7 +1083,7 @@ spec:
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "decimals": 0, "mappings": [], "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
             "gridPos": { "h": 3, "w": 3, "x": 14, "y": 62 }, "id": 175,
             "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "awx_license_instance_free{job=~\"$service\",pod=~\"$pod\"}", "legendFormat": "Available", "range": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "awx_license_instance_free{job=~\"$service\"}", "legendFormat": "Available", "range": true, "refId": "A" }],
             "title": "Hosts Available", "type": "stat"
           },
           {
@@ -1091,7 +1091,7 @@ spec:
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "decimals": 0, "mappings": [], "max": 100, "min": 0, "noValue": "0", "thresholds": { "mode": "percentage", "steps": [{ "color": "green", "value": null }, { "color": "#EAB839", "value": 70 }, { "color": "red", "value": 90 }] }, "unit": "percent" }, "overrides": [] },
             "gridPos": { "h": 3, "w": 3, "x": 17, "y": 62 }, "id": 176,
             "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "100 - ( awx_license_instance_free{job=~\"$service\",pod=~\"$pod\"} / awx_license_instance_total{job=~\"$service\",pod=~\"$pod\"} * 100 )", "legendFormat": "Used", "range": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "100 - ( awx_license_instance_free{job=~\"$service\"} / awx_license_instance_total{job=~\"$service\"} * 100 )", "legendFormat": "Used", "range": true, "refId": "A" }],
             "title": "Hosts Used %", "type": "stat"
           },
           {
@@ -1099,7 +1099,7 @@ spec:
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
             "gridPos": { "h": 3, "w": 2, "x": 20, "y": 62 }, "id": 177,
             "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "count(awx_instance_info{job=~\"$service\",pod=~\"$pod\"})", "range": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "count(awx_instance_info{job=~\"$service\"})", "range": true, "refId": "A" }],
             "title": "Instances", "type": "stat"
           },
           {
@@ -1107,7 +1107,7 @@ spec:
             "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } }, "overrides": [] },
             "gridPos": { "h": 3, "w": 2, "x": 22, "y": 62 }, "id": 178,
             "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_database_connections_total{namespace=~\"$namespace\",job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Connections", "range": true, "refId": "A" }],
+            "targets": [{ "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_database_connections_total{namespace=~\"$namespace\",job=~\"$service\"})", "legendFormat": "Connections", "range": true, "refId": "A" }],
             "title": "DB Connections", "type": "stat"
           }
         ],
@@ -1147,23 +1147,6 @@ spec:
               "query": { "query": "query_result(awx_instance_info{namespace=~\"$namespace\"})", "refId": "StandardVariableQuery" },
               "refresh": 1,
               "regex": "/service=\"([^\"]+)\"/",
-              "skipUrlSync": false,
-              "sort": 0,
-              "type": "query"
-            },
-            {
-              "current": {},
-              "datasource": { "type": "prometheus" },
-              "definition": "query_result(awx_instance_info{namespace=~\"$namespace\",job=~\"$service\"})",
-              "hide": 2,
-              "includeAll": false,
-              "label": "Pod",
-              "multi": false,
-              "name": "pod",
-              "options": [],
-              "query": { "query": "query_result(awx_instance_info{namespace=~\"$namespace\",job=~\"$service\"})", "refId": "StandardVariableQuery" },
-              "refresh": 1,
-              "regex": "/pod=\"([^\"]+)\"/",
               "skipUrlSync": false,
               "sort": 0,
               "type": "query"
