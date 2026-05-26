@@ -78,13 +78,9 @@ The "is everything working" dashboard. Monitors real-time health of all AAP comp
 
 Every panel includes a tooltip (?) explaining what it monitors and why it matters.
 
-#### Health Dashboard Screenshots
+#### Health Dashboard Screenshot
 
-![AAP Instance Components](images/health-01-components.png)
-&nbsp;
-![Operator Health and Service Accessibility](images/health-02-operators-services.png)
-&nbsp;
-![Service Accessibility and Jobs Status](images/health-03-services-jobs.png)
+![AAP - Health & Monitoring Dashboard](images/health-dashboard-full.png)
 
 
 ## **Repository Structure**
@@ -575,17 +571,13 @@ grafana-dashboard-aap-health                           3s            1m
 
 - Overview Dashboard
 
-![](images/09.png)
+![AAP - Overview Dashboard](images/overview-dashboard.png)
 
 &nbsp;
 
 - Health & Monitoring Dashboard
 
-![](images/health-01-components.png)
-&nbsp;
-![](images/health-02-operators-services.png)
-&nbsp;
-![](images/health-03-services-jobs.png)
+![AAP - Health & Monitoring Dashboard](images/health-dashboard-full.png)
 
 &nbsp;
 
