@@ -785,7 +785,7 @@ spec:
           },
           {
             "datasource": { "type": "prometheus" },
-            "description": "Overall Redis cluster health. Compares ready replicas to desired replicas. HEALTHY means all replicas are running. UNHEALTHY means the cluster is degraded or down.",
+            "description": "Overall Redis cluster health using two checks: (1) all StatefulSet replicas are ready, and (2) the AAP controller can actively reach Redis (callback_receiver_events_queue_size_redis metric is being reported). This detects both pod-level failures AND cluster-level issues (e.g., cluster_state:fail, unassigned slots) where pods are running but Redis is non-functional.",
             "fieldConfig": {
               "defaults": {
                 "color": { "mode": "thresholds" },
@@ -818,7 +818,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "clamp_max(floor(sum(kube_statefulset_status_replicas_ready{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"}) / clamp_min(sum(kube_statefulset_replicas{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"}), 1)), 1)",
+                "expr": "clamp_max(floor(sum(kube_statefulset_status_replicas_ready{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"}) / clamp_min(sum(kube_statefulset_replicas{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"}), 1)), 1) * clamp_max(count(callback_receiver_events_queue_size_redis{namespace=~\"$namespace\"}), 1)",
                 "instant": true,
                 "legendFormat": "Health",
                 "refId": "A"
