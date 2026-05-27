@@ -818,7 +818,7 @@ spec:
               {
                 "datasource": { "type": "prometheus" },
                 "editorMode": "code",
-                "expr": "clamp_max(floor(sum(kube_statefulset_status_replicas_ready{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"}) / sum(kube_statefulset_replicas{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"})), 1)",
+                "expr": "clamp_max(floor(sum(kube_statefulset_status_replicas_ready{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"}) / clamp_min(sum(kube_statefulset_replicas{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"}), 1)), 1)",
                 "instant": true,
                 "legendFormat": "Health",
                 "refId": "A"
