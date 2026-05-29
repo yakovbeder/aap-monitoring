@@ -62,7 +62,7 @@ jobs:
           from pathlib import Path
 
           dashboard_files = [
-              Path("common/base/dashboards/grafana-aap-dashboard.yaml"),
+              Path("common/base/dashboards/grafana-aap-overview-dashboard.yaml"),
               Path("common/base/dashboards/grafana-aap-health-dashboard.yaml"),
           ]
 

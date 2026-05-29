@@ -56,12 +56,11 @@ This repository provides two complementary Grafana dashboards with zero overlap:
 
 ### AAP - Overview
 
-The "what do we have" dashboard. Shows the platform's configuration, inventory, and capacity:
+The "what do we have" dashboard. Shows the platform's configuration, inventory, and automation content:
 
 - **License & Configuration** — AAP version, license type, expiry date, host usage, number of instances, Insights and External Logger status
 - **Inventory** — Users, Teams, Organizations, active sessions
 - **Resources** — Inventories, Projects, Job Templates, Workflow Templates, Active Hosts, Schedules
-- **Capacity** — Controller instance CPU, memory, fork capacity, remaining capacity, consumed capacity %
 
 ### AAP - Health & Monitoring
 
@@ -533,11 +532,11 @@ aap-monitor   31m
 ### **Creating Grafana Dashboards**
 
 - Now let's apply the AAP Grafana dashboards. Two dashboards are provided:
-  - `grafana-aap-dashboard.yaml` — **AAP - Overview** (license, inventory, capacity)
+  - `grafana-aap-overview-dashboard.yaml` — **AAP - Overview** (license, inventory, capacity)
   - `grafana-aap-health-dashboard.yaml` — **AAP - Health & Monitoring** (component health, accessibility, jobs, latency, resource health)
 
 ```shell
-oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-dashboard.yaml
+oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-overview-dashboard.yaml
 oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-health-dashboard.yaml
 ```
 
@@ -546,7 +545,7 @@ oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-health-dashboar
 ```shell
 oc -n aap-monitoring get grafanadashboard
 NAME                           NO MATCHING INSTANCES   LAST RESYNC   AGE
-grafana-dashboard-aap                                  3s            145m
+grafana-dashboard-aap-overview                         3s            145m
 grafana-dashboard-aap-health                           3s            1m
 ```
 
@@ -571,9 +570,11 @@ grafana-dashboard-aap-health                           3s            1m
 
 - **AAP - Health & Monitoring** Dashboard
 
-![Health Dashboard - Components, Operators, Services, Jobs](images/health-dashboard-top.png)
+![Health Dashboard - AAP Instance Components, Operator Health, Service Accessibility](images/health-dashboard-top.png)
 &nbsp;
-![Health Dashboard - Latency, Resource Health, Event Processing](images/health-dashboard-bottom.png)
+![Health Dashboard - Jobs Status, Latency](images/health-dashboard-middle.png)
+&nbsp;
+![Health Dashboard - Resource Health, Event Processing](images/health-dashboard-bottom.png)
 
 &nbsp;
 

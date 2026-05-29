@@ -1,7 +1,7 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  name: grafana-dashboard-aap
+  name: grafana-dashboard-aap-overview
   labels:
     app: grafana
 spec:
@@ -385,7 +385,7 @@ spec:
             "id": 24,
             "panels": [],
             "targets": [{ "datasource": { "type": "prometheus" }, "refId": "A" }],
-            "title": "Inventory and Capacity",
+            "title": "Inventory",
             "type": "row"
           },
           {
@@ -399,7 +399,7 @@ spec:
               },
               "overrides": []
             },
-            "gridPos": { "h": 6, "w": 7, "x": 0, "y": 8 },
+            "gridPos": { "h": 6, "w": 8, "x": 0, "y": 8 },
             "id": 26,
             "options": {
               "colorMode": "value",
@@ -429,7 +429,7 @@ spec:
             "dashes": false,
             "fill": 1,
             "fillGradient": 0,
-            "gridPos": { "h": 6, "w": 11, "x": 7, "y": 8 },
+            "gridPos": { "h": 6, "w": 16, "x": 8, "y": 8 },
             "hiddenSeries": false,
             "id": 30,
             "legend": { "alignAsTable": true, "avg": false, "current": true, "hideEmpty": true, "hideZero": false, "max": false, "min": false, "rightSide": true, "show": true, "total": false, "values": true },
@@ -462,39 +462,6 @@ spec:
             "xaxis": { "mode": "series", "show": true, "values": ["current"] },
             "yaxes": [{ "format": "short", "logBase": 1, "show": true }, { "format": "short", "logBase": 1, "show": true }],
             "yaxis": { "align": false }
-          },
-          {
-            "datasource": { "type": "prometheus" },
-            "description": "Controller instance capacity: CPU cores, memory, fork slots, and remaining available capacity.",
-            "fieldConfig": {
-              "defaults": {
-                "color": { "mode": "thresholds" },
-                "mappings": [],
-                "noValue": "0",
-                "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
-              },
-              "overrides": [{ "matcher": { "id": "byName", "options": "Memory" }, "properties": [{ "id": "unit", "value": "decbytes" }] }]
-            },
-            "gridPos": { "h": 6, "w": 6, "x": 18, "y": 8 },
-            "id": 20,
-            "options": {
-              "colorMode": "value",
-              "graphMode": "area",
-              "justifyMode": "auto",
-              "orientation": "auto",
-              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-              "text": {},
-              "textMode": "auto"
-            },
-            "pluginVersion": "9.1.6",
-            "targets": [
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "topk(1, awx_instance_cpu{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "CPU", "refId": "A" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "topk(1,awx_instance_memory{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Memory", "range": true, "refId": "C" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "topk(1, awx_instance_capacity{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Forks", "range": true, "refId": "B" },
-              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_instance_remaining_capacity{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Remaining", "range": true, "refId": "D" }
-            ],
-            "title": "Capacity",
-            "type": "stat"
           }
         ],
         "refresh": "30s",
