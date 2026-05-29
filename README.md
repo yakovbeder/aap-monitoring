@@ -40,7 +40,6 @@
 - [Viewing the Dashboard](#viewing-the-dashboard)
 - [Kustomize Deployment (Alternative)](#kustomize-deployment-alternative)
 - [Conclusion](#conclusion)
-- [References](#references)
 
 &nbsp;
 
@@ -51,6 +50,32 @@
 - A Kustomize-based deployment structure is provided for reproducible, GitOps-friendly installation.
 
 
+## **Dashboards**
+
+This repository provides two complementary Grafana dashboards with zero overlap:
+
+### AAP - Overview
+
+The "what do we have" dashboard. Shows the platform's configuration, inventory, and automation content:
+
+- **License & Configuration** — AAP version, license type, expiry date, host usage, number of instances, Insights and External Logger status
+- **Inventory** — Users, Teams, Organizations, active sessions
+- **Resources** — Inventories, Projects, Job Templates, Workflow Templates, Active Hosts, Schedules
+
+### AAP - Health & Monitoring
+
+The "is everything working" dashboard. Monitors real-time health of all AAP components:
+
+- **AAP Instance Components** — HEALTHY/CRITICAL status for Gateway, Controller (Web + Task), Hub (API, Web, Content, Worker, Redis), EDA (API, Scheduler, Activation Workers, Default Workers, Event Stream), and MCP. Shows available/desired replica ratio.
+- **Operator Health** — Individual status for each operator: Gateway, Controller, Hub, EDA, Resource, Metrics, and Lightspeed (shows NOT INSTALLED if absent).
+- **Service Accessibility** — UP/DOWN for UI (gateway backend readiness), API (controller metrics endpoint reachability), PostgreSQL (controller-observed connectivity, works with both internal and external DB), Redis Cluster replicas and pod-level health.
+- **Jobs Status** — Running, Pending, Failed jobs, Blocked Tasks, and Consumed Capacity. Includes time-series breakdown with deduplicated metrics.
+- **Latency** — Gateway/API processing time, PostgreSQL transaction latency, and Task Manager execution time.
+- **Resource Health** — Peak CPU and Memory usage as % of configured limits with green/yellow/red thresholds, total namespace resource consumption, and top 5 consumers shown as instant bar gauges.
+- **Event Processing** — Redis queue depth, in-memory events, and average event processing time.
+
+Every panel includes a tooltip (?) explaining what it monitors and why it matters.
+
 ## **Repository Structure**
 
 ```
@@ -58,7 +83,7 @@ aap-monitoring/
 ├── common/base/
 │   ├── auth/              # Service account token secret
 │   ├── core/              # Grafana instance, datasource, session secret, certs, folder
-│   ├── dashboards/        # AAP Grafana dashboard
+│   ├── dashboards/        # AAP Grafana dashboards (Overview + Health)
 │   ├── rbac/              # Namespace, ClusterRoles, RoleBindings
 │   └── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
 └── overlays/aap-grafana/
@@ -504,42 +529,52 @@ aap-monitor   31m
 
 &nbsp;
 
-### **Creating Grafana Dashboard**
+### **Creating Grafana Dashboards**
 
-- Now let's apply the AAP Grafana dashboard. The dashboard YAML file with the full JSON embedded is available at `common/base/dashboards/grafana-aap-dashboard.yaml`.
+- Now let's apply the AAP Grafana dashboards. Two dashboards are provided:
+  - `grafana-aap-overview-dashboard.yaml` — **AAP - Overview** (license, inventory, capacity)
+  - `grafana-aap-health-dashboard.yaml` — **AAP - Health & Monitoring** (component health, accessibility, jobs, latency, resource health)
 
 ```shell
-oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-dashboard.yaml
+oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-overview-dashboard.yaml
+oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-health-dashboard.yaml
 ```
 
-- Validate our created GrafanaDashboard:
+- Validate our created GrafanaDashboards:
 
 ```shell
 oc -n aap-monitoring get grafanadashboard
-NAME                    NO MATCHING INSTANCES   LAST RESYNC   AGE
-grafana-dashboard-aap                           3s            145m
+NAME                           NO MATCHING INSTANCES   LAST RESYNC   AGE
+grafana-dashboard-aap-overview                         3s            145m
+grafana-dashboard-aap-health                           3s            1m
 ```
 
 &nbsp;
 
-### **Viewing the Dashboard**
+### **Viewing the Dashboards**
 
 - Access Grafana, in the left side menu, click on **Dashboards** and then on **Browse**
-- A folder with the name **AAP Dashboards** and the dashboard **AAP - Metrics v3** will be displayed, click on the dashboard.
+- A folder with the name **AAP Dashboards** will be displayed, containing two dashboards:
+  - **AAP - Overview** — platform configuration, inventory, and capacity
+  - **AAP - Health & Monitoring** — real-time health of all AAP components
 
 ![](images/08.png)
 
 &nbsp;
 
-- Dashboard
+- **AAP - Overview** Dashboard
 
-![](images/09.png)
+![AAP - Overview Dashboard](images/overview-dashboard.png)
+
 &nbsp;
-![](images/10.png)
+
+- **AAP - Health & Monitoring** Dashboard
+
+![Health Dashboard - AAP Instance Components, Operator Health, Service Accessibility](images/health-dashboard-top.png)
 &nbsp;
-![](images/11.png)
+![Health Dashboard - Jobs Status, Latency](images/health-dashboard-middle.png)
 &nbsp;
-![](images/12.png)
+![Health Dashboard - Resource Health, Event Processing](images/health-dashboard-bottom.png)
 
 &nbsp;
 
@@ -581,16 +616,4 @@ oc apply -k overlays/aap-grafana/dashboards/
 
 ## **Conclusion**
 
-Using User-Defined Projects from the OpenShift Monitoring stack, we created monitoring for the Ansible Automation Platform, using a Grafana Dashboard, to visualize usage metrics and statistics, such as subscription information, playbook metrics, users and resource consumption within OpenShift.
-
-&nbsp;
-
-## **References**
-
-For more details and other configurations, start with the reference documents below.
-
-- [Enabling monitoring for user-defined projects](https://docs.openshift.com/container-platform/4.16/observability/monitoring/enabling-monitoring-for-user-defined-projects.html)
-- [Grafana Operator](https://grafana-operator.github.io/grafana-operator/docs/)
-- [Specifying how a service is monitored](https://docs.openshift.com/container-platform/4.16/observability/monitoring/managing-metrics.html#specifying-how-a-service-is-monitored_managing-metrics)
-- [Original article by Leonardo Araujo](https://github.com/leoaaraujo/articles/blob/master/aap-openshift-monitoring/ARTICLE.md)
-- [Original dashboard by Leonardo Araujo](https://github.com/leoaaraujo/aap-dashboard)
+Using User-Defined Projects from the OpenShift Monitoring stack, we created monitoring for the Ansible Automation Platform, using two Grafana Dashboards: an **Overview** dashboard for platform configuration and inventory, and a **Health & Monitoring** dashboard for real-time component health, service accessibility, job status, latency, and resource consumption within OpenShift.

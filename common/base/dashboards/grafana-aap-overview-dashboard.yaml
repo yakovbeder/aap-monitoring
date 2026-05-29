@@ -1,0 +1,534 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: grafana-dashboard-aap-overview
+  labels:
+    app: grafana
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folder: "AAP Dashboards"
+  json: |
+    {
+        "annotations": {
+          "list": [
+            {
+              "builtIn": 1,
+              "datasource": { "type": "datasource", "uid": "grafana" },
+              "enable": true,
+              "hide": true,
+              "iconColor": "rgba(0, 211, 255, 1)",
+              "limit": 100,
+              "name": "Annotations & Alerts",
+              "showIn": 0,
+              "target": { "limit": 100, "matchAny": false, "tags": [], "type": "dashboard" },
+              "type": "dashboard"
+            }
+          ]
+        },
+        "description": "AAP platform overview: license, inventory, resources, and capacity. For health monitoring, see the AAP - Health & Monitoring dashboard.",
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": 5,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "collapsed": false,
+            "datasource": { "type": "prometheus" },
+            "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+            "id": 22,
+            "panels": [],
+            "targets": [{ "datasource": { "type": "prometheus" }, "refId": "A" }],
+            "title": "License and Configuration",
+            "type": "row"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "gridPos": { "h": 6, "w": 3, "x": 1, "y": 1 },
+            "id": 14,
+            "options": {
+              "content": "<div style=\"display:flex;align-items:center;justify-content:center;height:100%\"><img src=\"https://www.redhat.com/cms/managed-files/ansible-logo_0_0.png\" style=\"max-width:100%;max-height:100%;object-fit:contain\"></div>\n",
+              "mode": "html"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{ "datasource": { "type": "prometheus" }, "refId": "A" }],
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "AAP Controller software version currently running.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [],
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 3, "w": 2, "x": 5, "y": 1 },
+            "id": 2,
+            "options": {
+              "colorMode": "background",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^version$/", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{
+              "datasource": { "type": "prometheus" },
+              "editorMode": "code",
+              "expr": "awx_instance_info{job=~\"$service\"}",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }],
+            "title": "Version",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Type of AAP subscription license (enterprise, trial, open, etc.).",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [],
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 3, "w": 5, "x": 7, "y": 1 },
+            "id": 3,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^license_type$/", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{
+              "datasource": { "type": "prometheus" },
+              "editorMode": "code",
+              "expr": "awx_system_info{job=~\"$service\",pod=~\"$pod\"}",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }],
+            "title": "License Type",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Whether Red Hat Insights analytics data collection is enabled for this AAP instance.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "fixedColor": "rgb(255, 255, 255)", "mode": "thresholds" },
+                "mappings": [],
+                "noValue": "0",
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+              },
+              "overrides": [{
+                "matcher": { "id": "byName", "options": "insights_analytics" },
+                "properties": [{ "id": "mappings", "value": [{ "options": { "False": { "color": "blue", "index": 1 }, "True": { "color": "green", "index": 0 } }, "type": "value" }] }]
+              }]
+            },
+            "gridPos": { "h": 3, "w": 3, "x": 12, "y": 1 },
+            "id": 12,
+            "options": {
+              "colorMode": "background",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^insights_analytics$/", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{
+              "datasource": { "type": "prometheus" },
+              "editorMode": "code",
+              "expr": "awx_system_info{job=~\"$service\",pod=~\"$pod\"}",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }],
+            "title": "Insights",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Total number of managed hosts allowed by the AAP subscription license.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [],
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 6, "w": 3, "x": 15, "y": 1 },
+            "id": 6,
+            "options": {
+              "colorMode": "background",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{
+              "datasource": { "type": "prometheus" },
+              "editorMode": "code",
+              "expr": "awx_license_instance_total{job=~\"$service\",pod=~\"$pod\"}",
+              "range": true,
+              "refId": "A"
+            }],
+            "title": "Hosts Total",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Remaining host slots available under the current license.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "decimals": 0,
+                "mappings": [],
+                "min": 0,
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 6, "w": 3, "x": 18, "y": 1 },
+            "id": 10,
+            "options": {
+              "colorMode": "background",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{
+              "datasource": { "type": "prometheus" },
+              "editorMode": "code",
+              "expr": "awx_license_instance_free{job=~\"$service\",pod=~\"$pod\"}",
+              "legendFormat": "Available",
+              "range": true,
+              "refId": "A"
+            }],
+            "title": "Hosts Available",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Percentage of licensed host slots currently in use. Yellow at 70%, red at 90%.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "decimals": 0,
+                "mappings": [],
+                "max": 100, "min": 0,
+                "noValue": "0",
+                "thresholds": { "mode": "percentage", "steps": [{ "color": "green", "value": null }, { "color": "#EAB839", "value": 70 }, { "color": "red", "value": 90 }] },
+                "unit": "percent"
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 6, "w": 3, "x": 21, "y": 1 },
+            "id": 8,
+            "options": {
+              "colorMode": "background",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{
+              "datasource": { "type": "prometheus" },
+              "editorMode": "code",
+              "expr": "100 - ( awx_license_instance_free{job=~\"$service\",pod=~\"$pod\"} / awx_license_instance_total{job=~\"$service\",pod=~\"$pod\"} * 100 )",
+              "legendFormat": "Used",
+              "range": true,
+              "refId": "A"
+            }],
+            "title": "Hosts Used",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Number of AAP controller instances reporting metrics.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [],
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 3, "w": 2, "x": 5, "y": 4 },
+            "id": 17,
+            "options": {
+              "colorMode": "background",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{
+              "datasource": { "type": "prometheus" },
+              "editorMode": "code",
+              "expr": "count(awx_instance_info{job=~\"$service\",pod=~\"$pod\"})",
+              "range": true,
+              "refId": "A"
+            }],
+            "title": "Instances",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Time remaining until the AAP subscription license expires.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [],
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+                "unit": "dtdurations"
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 3, "w": 5, "x": 7, "y": 4 },
+            "id": 4,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^license_expiry$/", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{
+              "datasource": { "type": "prometheus" },
+              "editorMode": "code",
+              "expr": "awx_system_info{job=~\"$service\",pod=~\"$pod\"}",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }],
+            "title": "License Expiry",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Whether an external log aggregator (e.g., Splunk, ELK) is configured.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "fixedColor": "rgb(255, 255, 255)", "mode": "thresholds" },
+                "mappings": [],
+                "noValue": "0",
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+              },
+              "overrides": [{
+                "matcher": { "id": "byName", "options": "external_logger_enabled" },
+                "properties": [{ "id": "mappings", "value": [{ "options": { "False": { "color": "blue", "index": 1 }, "True": { "color": "green", "index": 0 } }, "type": "value" }] }]
+              }]
+            },
+            "gridPos": { "h": 3, "w": 3, "x": 12, "y": 4 },
+            "id": 15,
+            "options": {
+              "colorMode": "background",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^external_logger_enabled$/", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [{
+              "datasource": { "type": "prometheus" },
+              "editorMode": "code",
+              "expr": "awx_system_info{job=~\"$service\",pod=~\"$pod\"}",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }],
+            "title": "External Logger",
+            "type": "stat"
+          },
+          {
+            "collapsed": false,
+            "datasource": { "type": "prometheus" },
+            "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+            "id": 24,
+            "panels": [],
+            "targets": [{ "datasource": { "type": "prometheus" }, "refId": "A" }],
+            "title": "Inventory",
+            "type": "row"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Count of AAP identity objects: Users, Teams, Organizations, and currently active user sessions.",
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "mappings": [],
+                "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+              },
+              "overrides": []
+            },
+            "gridPos": { "h": 6, "w": 8, "x": 0, "y": 8 },
+            "id": 26,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+              "text": {},
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.6",
+            "targets": [
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_users_total{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Users", "refId": "A" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_teams_total{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Teams", "refId": "B" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_organizations_total{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Organizations", "refId": "C" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_sessions_total{job=~\"$service\",type=\"all\",pod=~\"$pod\"})", "legendFormat": "Online Users", "range": true, "refId": "G" }
+            ],
+            "title": "Access",
+            "type": "stat"
+          },
+          {
+            "datasource": { "type": "prometheus" },
+            "description": "Count of automation content objects: Inventories, Projects, Job Templates, Workflow Templates, Active Hosts, and Schedules.",
+            "aliasColors": {},
+            "bars": true,
+            "dashLength": 10,
+            "dashes": false,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": { "h": 6, "w": 16, "x": 8, "y": 8 },
+            "hiddenSeries": false,
+            "id": 30,
+            "legend": { "alignAsTable": true, "avg": false, "current": true, "hideEmpty": true, "hideZero": false, "max": false, "min": false, "rightSide": true, "show": true, "total": false, "values": true },
+            "lines": false,
+            "linewidth": 5,
+            "nullPointMode": "connected",
+            "options": { "alertThreshold": false },
+            "percentage": false,
+            "pluginVersion": "9.1.6",
+            "pointradius": 2,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": true,
+            "targets": [
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_inventories_total{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Inventory", "range": true, "refId": "A" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_projects_total{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Projects", "range": true, "refId": "B" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_job_templates_total{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Job Template", "range": true, "refId": "C" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_workflow_job_templates_total{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Workflow", "range": true, "refId": "D" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_hosts_total{job=~\"$service\",type=\"active\",pod=~\"$pod\"})", "legendFormat": "Active Hosts", "range": true, "refId": "E" },
+              { "datasource": { "type": "prometheus" }, "editorMode": "code", "expr": "sum(awx_schedules_total{job=~\"$service\",pod=~\"$pod\"})", "legendFormat": "Schedules", "range": true, "refId": "F" }
+            ],
+            "thresholds": [],
+            "timeRegions": [],
+            "title": "Resources",
+            "tooltip": { "shared": true, "sort": 0, "value_type": "individual" },
+            "type": "graph",
+            "xaxis": { "mode": "series", "show": true, "values": ["current"] },
+            "yaxes": [{ "format": "short", "logBase": 1, "show": true }, { "format": "short", "logBase": 1, "show": true }],
+            "yaxis": { "align": false }
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 37,
+        "style": "dark",
+        "tags": ["aap", "overview"],
+        "templating": {
+          "list": [
+            {
+              "current": {},
+              "datasource": { "type": "prometheus" },
+              "definition": "label_values(awx_instance_info,namespace)",
+              "hide": 0,
+              "includeAll": false,
+              "label": "Namespace",
+              "multi": false,
+              "name": "namespace",
+              "options": [],
+              "query": { "query": "label_values(awx_instance_info,namespace)", "refId": "StandardVariableQuery" },
+              "refresh": 1,
+              "regex": "",
+              "skipUrlSync": false,
+              "sort": 0,
+              "type": "query"
+            },
+            {
+              "current": {},
+              "datasource": { "type": "prometheus" },
+              "definition": "query_result(awx_instance_info{namespace=~\"$namespace\"})",
+              "description": "Service",
+              "hide": 0,
+              "includeAll": false,
+              "label": "Service",
+              "multi": false,
+              "name": "service",
+              "options": [],
+              "query": { "query": "query_result(awx_instance_info{namespace=~\"$namespace\"})", "refId": "StandardVariableQuery" },
+              "refresh": 1,
+              "regex": "/service=\"([^\"]+)\"/",
+              "skipUrlSync": false,
+              "sort": 0,
+              "type": "query"
+            },
+            {
+              "current": {},
+              "datasource": { "type": "prometheus" },
+              "definition": "query_result(awx_instance_info{namespace=~\"$namespace\",job=~\"$service\"})",
+              "hide": 2,
+              "includeAll": false,
+              "label": "Pod",
+              "multi": false,
+              "name": "pod",
+              "options": [],
+              "query": { "query": "query_result(awx_instance_info{namespace=~\"$namespace\",job=~\"$service\"})", "refId": "StandardVariableQuery" },
+              "refresh": 1,
+              "regex": "/pod=\"([^\"]+)\"/",
+              "skipUrlSync": false,
+              "sort": 0,
+              "type": "query"
+            }
+          ]
+        },
+        "time": { "from": "now-30m", "to": "now" },
+        "timepicker": {},
+        "timezone": "",
+        "title": "AAP - Overview",
+        "uid": "",
+        "version": 8,
+        "weekStart": ""
+      }
