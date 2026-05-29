@@ -1,0 +1,94 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validation tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+          curl -sSL https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin/kustomize
+
+      - name: Validate YAML syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          import yaml
+
+          yaml_files = []
+          for root in (Path("common"), Path("overlays"), Path(".github/workflows")):
+              yaml_files.extend(sorted(root.rglob("*.yaml")))
+              yaml_files.extend(sorted(root.rglob("*.yml")))
+
+          if not yaml_files:
+              raise SystemExit("No YAML files found to validate")
+
+          for path in yaml_files:
+              with path.open() as handle:
+                  list(yaml.safe_load_all(handle))
+              print(f"validated {path}")
+          PY
+
+      - name: Build Kustomize overlays
+        run: |
+          kustomize build overlays/aap-grafana/infrastructure-rbac >/dev/null
+          kustomize build overlays/aap-grafana/grafana-instance >/dev/null
+          kustomize build overlays/aap-grafana/servicemonitor >/dev/null
+          kustomize build overlays/aap-grafana/dashboards >/dev/null
+
+      - name: Validate embedded dashboard JSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          dashboard_files = [
+              Path("common/base/dashboards/grafana-aap-dashboard.yaml"),
+              Path("common/base/dashboards/grafana-aap-health-dashboard.yaml"),
+          ]
+
+          for path in dashboard_files:
+              lines = path.read_text().splitlines()
+
+              try:
+                  start_index = lines.index("  json: |") + 1
+              except ValueError as exc:
+                  raise SystemExit(f"{path}: missing spec.json block") from exc
+
+              json_lines = []
+              for line in lines[start_index:]:
+                  if line.startswith("    "):
+                      json_lines.append(line[4:])
+                      continue
+
+                  if not line.strip():
+                      json_lines.append("")
+                      continue
+
+                  break
+
+              if not json_lines:
+                  raise SystemExit(f"{path}: empty spec.json block")
+
+              json.loads("\n".join(json_lines))
+              print(f"validated {path}")
+          PY

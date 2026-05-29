@@ -40,7 +40,6 @@
 - [Viewing the Dashboard](#viewing-the-dashboard)
 - [Kustomize Deployment (Alternative)](#kustomize-deployment-alternative)
 - [Conclusion](#conclusion)
-- [References](#references)
 
 &nbsp;
 
@@ -617,15 +616,3 @@ oc apply -k overlays/aap-grafana/dashboards/
 ## **Conclusion**
 
 Using User-Defined Projects from the OpenShift Monitoring stack, we created monitoring for the Ansible Automation Platform, using two Grafana Dashboards: an **Overview** dashboard for platform configuration and inventory, and a **Health & Monitoring** dashboard for real-time component health, service accessibility, job status, latency, and resource consumption within OpenShift.
-
-&nbsp;
-
-## **References**
-
-For more details and other configurations, start with the reference documents below.
-
-- [Enabling monitoring for user-defined projects](https://docs.openshift.com/container-platform/4.16/observability/monitoring/enabling-monitoring-for-user-defined-projects.html)
-- [Grafana Operator](https://grafana-operator.github.io/grafana-operator/docs/)
-- [Specifying how a service is monitored](https://docs.openshift.com/container-platform/4.16/observability/monitoring/managing-metrics.html#specifying-how-a-service-is-monitored_managing-metrics)
-- [Original article by Leonardo Araujo](https://github.com/leoaaraujo/articles/blob/master/aap-openshift-monitoring/ARTICLE.md)
-- [Original dashboard by Leonardo Araujo](https://github.com/leoaaraujo/aap-dashboard)
