@@ -5,5 +5,4 @@ kind: Kustomization
 namespace: aap-monitoring
 
 resources:
-  - ../../../common/base/auth
   - ../../../common/base/dashboards

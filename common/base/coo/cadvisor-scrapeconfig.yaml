@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prometheus-sa-token
+  annotations:
+    kubernetes.io/service-account.name: aap-monitoring-stack-prometheus
+type: kubernetes.io/service-account-token
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubelet-cadvisor
+  labels:
+    monitoredby: aap-monitoring
+spec:
+  scrapeInterval: 30s
+  scheme: HTTPS
+  metricsPath: /metrics/cadvisor
+  honorLabels: true
+  authorization:
+    credentials:
+      name: prometheus-sa-token
+      key: token
+  tlsConfig:
+    insecureSkipVerify: true
+  kubernetesSDConfigs:
+    - role: Node
+  relabelings:
+    - sourceLabels: [__address__]
+      regex: (.+?)(?::\d+)?
+      replacement: ${1}:10250
+      targetLabel: __address__
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+  metricRelabelings:
+    - action: keep
+      sourceLabels: [__name__]
+      regex: "container_cpu_usage_seconds_total|container_memory_working_set_bytes|container_memory_usage_bytes|container_fs_usage_bytes"
