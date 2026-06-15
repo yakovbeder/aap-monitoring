@@ -149,7 +149,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-gateway\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -248,7 +248,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-controller-web\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -347,7 +347,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-controller-task\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -446,7 +446,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-api\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -545,7 +545,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-web\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -644,7 +644,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-content\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -754,7 +754,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-api\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -864,7 +864,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -974,7 +974,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -1084,7 +1084,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -1183,7 +1183,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -1293,7 +1293,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -1403,7 +1403,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -1513,7 +1513,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-mcp\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-mcp\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-mcp\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-mcp\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-mcp\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-mcp\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -1628,7 +1628,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -1727,7 +1727,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -1826,7 +1826,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -1925,7 +1925,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -2024,7 +2024,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -2134,7 +2134,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
@@ -2244,7 +2244,7 @@ spec:
                             "type": "prometheus"
                         },
                         "editorMode": "code",
-                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"}) > bool 0) + (sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"}) == bool 0)",
+                        "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"})))",
                         "instant": true,
                         "legendFormat": "",
                         "refId": "A"
