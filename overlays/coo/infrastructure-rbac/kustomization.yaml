@@ -1,0 +1,40 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: aap-monitoring
+
+resources:
+  - ../../../common/base/rbac
+  - coo-prometheus-rbac.yaml
+
+patches:
+  # Set grafana-sa namespace on auth-delegator binding
+  - patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: aap-monitoring
+    target:
+      group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+      name: auth-delegator-aap-grafana
+  # Set grafana-sa namespace on grafana-proxy RoleBinding
+  - patch: |-
+      - op: add
+        path: /subjects/0/namespace
+        value: aap-monitoring
+    target:
+      group: rbac.authorization.k8s.io
+      kind: RoleBinding
+      name: grafana-proxy
+  # Remove cluster-monitoring-view CRB (not needed; Grafana queries COO Prometheus directly)
+  - patch: |-
+      $patch: delete
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: cluster-monitoring-view
+    target:
+      group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+      name: cluster-monitoring-view

@@ -39,6 +39,7 @@
   - [Creating Grafana Dashboard](#creating-grafana-dashboard)
 - [Viewing the Dashboard](#viewing-the-dashboard)
 - [Kustomize Deployment (Alternative)](#kustomize-deployment-alternative)
+- [Option B: Cluster Observability Operator (COO)](#option-b-cluster-observability-operator-coo)
 - [Conclusion](#conclusion)
 
 &nbsp;
@@ -96,12 +97,19 @@ aap-monitoring/
 │   ├── core/              # Grafana instance, datasource, session secret, certs, folder
 │   ├── dashboards/        # AAP Grafana dashboards (Overview + Health)
 │   ├── rbac/              # Namespace, ClusterRoles, RoleBindings
-│   └── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
-└── overlays/aap-grafana/
-    ├── dashboards/        # Deploys auth + dashboards with namespace override
-    ├── grafana-instance/  # Deploys core with user role and datasource patches
-    ├── infrastructure-rbac/  # Deploys RBAC with namespace patches
-    └── servicemonitor/    # Deploys ServiceMonitor for AAP metrics
+│   ├── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
+│   └── coo/              # Cluster Observability Operator MonitoringStack + KSM ServiceMonitor
+├── overlays/aap-grafana/  # User-workload-monitoring path (default)
+│   ├── dashboards/        # Deploys auth + dashboards with namespace override
+│   ├── grafana-instance/  # Deploys core with user role and datasource patches
+│   ├── infrastructure-rbac/  # Deploys RBAC with namespace patches
+│   └── servicemonitor/    # Deploys ServiceMonitor for AAP metrics
+└── overlays/coo/          # Cluster Observability Operator path (alternative)
+    ├── monitoring-stack/   # COO MonitoringStack CR + KSM cross-namespace ServiceMonitor
+    ├── infrastructure-rbac/  # RBAC without cluster-monitoring-view, with COO Prometheus SA permissions
+    ├── grafana-instance/  # Grafana datasource pointed to COO prometheus-operated
+    ├── servicemonitor/    # AAP ServiceMonitor with monitoredby label for COO discovery
+    └── dashboards/        # Same dashboards as UWM path
 ```
 
 
@@ -625,6 +633,61 @@ oc apply -k overlays/aap-grafana/dashboards/
 >    Replace the `session_secret` value with the generated output.
 
 
+### **Option B: Cluster Observability Operator (COO)**
+
+If you cannot or prefer not to use OpenShift user-workload-monitoring, you can deploy a standalone Prometheus instance via the **Cluster Observability Operator** (COO). This path uses a `MonitoringStack` CR to provision Prometheus and scrapes the existing platform `kube-state-metrics` from `openshift-monitoring` for health dashboard metrics.
+
+**Prerequisites:**
+
+- Cluster Observability Operator installed from OperatorHub
+- Grafana Operator v5.21+
+- Cluster-admin access (for cross-namespace RBAC)
+
+**How it works:**
+
+The COO path deploys a `MonitoringStack` CR in `aap-monitoring` that provisions a dedicated Prometheus instance. A cross-namespace `ServiceMonitor` scrapes `kube-state-metrics` in `openshift-monitoring`, providing the `kube_deployment_*` metrics required by the health dashboard. The AAP `ServiceMonitor` is labeled with `monitoredby: aap-monitoring` so the COO Prometheus discovers and scrapes it.
+
+Grafana connects directly to the COO Prometheus (`http://prometheus-operated:9090`) instead of the platform Thanos Querier. No `cluster-monitoring-view` ClusterRoleBinding or SA bearer token injection is needed.
+
+**Deploy:**
+
+```shell
+# 1. RBAC and namespace (includes COO Prometheus SA permissions for cross-namespace KSM scrape)
+oc apply -k overlays/coo/infrastructure-rbac/
+
+# 2. MonitoringStack CR + KSM ServiceMonitor
+oc apply -k overlays/coo/monitoring-stack/
+
+# 3. Grafana instance and datasource (pointed to COO Prometheus)
+oc apply -k overlays/coo/grafana-instance/
+
+# 4. AAP ServiceMonitor (with monitoredby label for COO discovery)
+oc apply -k overlays/coo/servicemonitor/
+
+# 5. Auth secret and dashboards
+oc apply -k overlays/coo/dashboards/
+```
+
+**Verify:**
+
+```shell
+# MonitoringStack is ready
+oc -n aap-monitoring get monitoringstack aap-monitoring-stack
+
+# Prometheus pod is running
+oc -n aap-monitoring get pods -l app.kubernetes.io/managed-by=observability-operator
+
+# prometheus-operated service exists
+oc -n aap-monitoring get svc prometheus-operated
+
+# Check Prometheus targets (port-forward to verify KSM and AAP scrape targets)
+oc -n aap-monitoring port-forward svc/prometheus-operated 9090:9090 &
+curl -s http://localhost:9090/api/v1/targets | python3 -m json.tool | grep -A2 'job'
+```
+
+> **Note:** The COO path does not depend on user-workload-monitoring (`enableUserWorkload`). It uses a separate Prometheus instance managed by COO. The existing `overlays/aap-grafana/` path remains available for environments using user-workload-monitoring.
+
+
 ## **Conclusion**
 
-Using User-Defined Projects from the OpenShift Monitoring stack, we created monitoring for the Ansible Automation Platform, using two Grafana Dashboards: an **Overview** dashboard for platform configuration and inventory, and a **Health & Monitoring** dashboard for real-time component health, service accessibility, job status, latency, and resource consumption within OpenShift.
+Using User-Defined Projects from the OpenShift Monitoring stack, we created monitoring for the Ansible Automation Platform, using two Grafana Dashboards: an **Overview** dashboard for platform configuration and inventory, and a **Health & Monitoring** dashboard for real-time component health, service accessibility, job status, latency, and resource consumption within OpenShift. An alternative deployment path using the Cluster Observability Operator (COO) is available for environments that do not use user-workload-monitoring.
