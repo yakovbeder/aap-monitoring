@@ -1,0 +1,26 @@
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: MonitoringStack
+metadata:
+  name: aap-monitoring-stack
+  labels:
+    app: aap-monitoring
+spec:
+  alertmanagerConfig:
+    disabled: true
+  prometheusConfig:
+    replicas: 1
+    retention: 7d
+    retentionSize: 40GB
+    scrapeInterval: 30s
+    persistentVolumeClaim:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 50Gi
+  logLevel: info
+  namespaceSelector: {}
+  resourceSelector:
+    matchLabels:
+      monitoredby: aap-monitoring

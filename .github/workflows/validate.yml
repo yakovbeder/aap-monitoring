@@ -58,6 +58,11 @@ jobs:
           kustomize build overlays/aap-grafana/grafana-instance >/dev/null
           kustomize build overlays/aap-grafana/servicemonitor >/dev/null
           kustomize build overlays/aap-grafana/dashboards >/dev/null
+          kustomize build overlays/coo/monitoring-stack >/dev/null
+          kustomize build overlays/coo/infrastructure-rbac >/dev/null
+          kustomize build overlays/coo/grafana-instance >/dev/null
+          kustomize build overlays/coo/servicemonitor >/dev/null
+          kustomize build overlays/coo/dashboards >/dev/null
 
       - name: Validate embedded dashboard JSON
         run: |

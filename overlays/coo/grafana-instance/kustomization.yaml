@@ -1,0 +1,37 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: aap-monitoring
+
+resources:
+  - ../../../common/base/core
+
+patches:
+  # Auto-assign Grafana users
+  - patch: |-
+      - op: add
+        path: /spec/config/users
+        value:
+          auto_assign_org: 'true'
+          auto_assign_org_id: '1'
+          auto_assign_org_role: Admin
+    target:
+      group: grafana.integreatly.org
+      version: v1beta1
+      kind: Grafana
+  # Point datasource to COO prometheus-operated (no TLS, no bearer token)
+  - patch: |-
+      - op: replace
+        path: /spec/datasource/url
+        value: 'http://prometheus-operated.aap-monitoring.svc.cluster.local:9090'
+      - op: remove
+        path: /spec/datasource/jsonData/httpHeaderName1
+      - op: remove
+        path: /spec/datasource/jsonData/tlsSkipVerify
+      - op: replace
+        path: /spec/datasource/secureJsonData
+        value: {}
+    target:
+      kind: GrafanaDatasource
+      name: prometheus-grafanadatasource

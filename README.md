@@ -10,7 +10,7 @@
 
 &nbsp;
 
-> ### In this article, we will demonstrate how to monitor Ansible Automation Platform (AAP) running on OpenShift, using user-workload-monitoring with Prometheus and Grafana.
+> ### In this article, we will demonstrate how to monitor Ansible Automation Platform (AAP) running on OpenShift with Grafana dashboards. Two deployment paths are provided: **User-Workload Monitoring** uses the platform Thanos Querier; **Cluster Observability Operator (COO)** deploys a dedicated Prometheus instance.
 >
 > In this article we use the following versions:
 > - OpenShift v4.16+
@@ -32,13 +32,27 @@
 - [Repository Structure](#repository-structure)
 - [Prerequisites](#prerequisites)
 - [Procedure](#procedure)
-  - [Enable user-defined projects](#enable-user-defined-projects)
   - [Install Grafana Operator](#install-grafana-operator)
-  - [Creating User in Ansible Automation Platform](#creating-user-in-ansible-automation-platform)
-  - [Creating Prometheus ServiceMonitor](#creating-prometheus-servicemonitor)
-  - [Creating Grafana Dashboard](#creating-grafana-dashboard)
-- [Viewing the Dashboard](#viewing-the-dashboard)
-- [Kustomize Deployment (Alternative)](#kustomize-deployment-alternative)
+  - [Create Grafana Instance](#create-grafana-instance)
+  - [User-Workload Monitoring](#user-workload-monitoring)
+    - [Enable user-defined projects](#enable-user-defined-projects)
+    - [Creating Grafana Datasource](#creating-grafana-datasource)
+    - [Creating User in Ansible Automation Platform](#creating-user-in-ansible-automation-platform)
+    - [Creating Prometheus ServiceMonitor](#creating-prometheus-servicemonitor)
+    - [Creating Grafana Dashboards](#creating-grafana-dashboards)
+    - [Viewing the Dashboards](#viewing-the-dashboards)
+    - [Kustomize Deployment (UWM)](#kustomize-deployment-uwm)
+  - [Cluster Observability Operator (COO)](#cluster-observability-operator-coo)
+    - [Install Cluster Observability Operator](#install-cluster-observability-operator)
+    - [COO Prometheus Scrape Permissions](#coo-prometheus-scrape-permissions)
+    - [Creating the MonitoringStack](#creating-the-monitoringstack)
+    - [Scraping kube-state-metrics (KSM)](#scraping-kube-state-metrics-ksm)
+    - [Scraping kubelet cAdvisor (Resource Health)](#scraping-kubelet-cadvisor-resource-health)
+    - [Creating Grafana Datasource (COO)](#creating-grafana-datasource-coo)
+    - [Creating Prometheus ServiceMonitor (COO)](#creating-prometheus-servicemonitor-coo)
+    - [Creating Grafana Dashboards (COO)](#creating-grafana-dashboards-coo)
+    - [Viewing the Dashboards (COO)](#viewing-the-dashboards-coo)
+    - [Kustomize Deployment (COO)](#kustomize-deployment-coo)
 - [Conclusion](#conclusion)
 
 &nbsp;
@@ -96,12 +110,19 @@ aap-monitoring/
 │   ├── core/              # Grafana instance, datasource, session secret, certs, folder
 │   ├── dashboards/        # AAP Grafana dashboards (Overview + Health)
 │   ├── rbac/              # Namespace, ClusterRoles, RoleBindings
-│   └── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
-└── overlays/aap-grafana/
-    ├── dashboards/        # Deploys auth + dashboards with namespace override
-    ├── grafana-instance/  # Deploys core with user role and datasource patches
-    ├── infrastructure-rbac/  # Deploys RBAC with namespace patches
-    └── servicemonitor/    # Deploys ServiceMonitor for AAP metrics
+│   ├── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
+│   └── coo/               # MonitoringStack, KSM ServiceMonitor, cAdvisor ScrapeConfig
+├── overlays/aap-grafana/  # User-Workload Monitoring path
+│   ├── dashboards/        # Deploys auth + dashboards with namespace override
+│   ├── grafana-instance/  # Deploys core with user role and datasource patches
+│   ├── infrastructure-rbac/  # Deploys RBAC with namespace patches
+│   └── servicemonitor/    # Deploys ServiceMonitor for AAP metrics
+└── overlays/coo/          # Cluster Observability Operator (COO) path
+    ├── monitoring-stack/   # MonitoringStack CR + KSM ServiceMonitor + cAdvisor ScrapeConfig
+    ├── infrastructure-rbac/  # RBAC without cluster-monitoring-view, with COO Prometheus SA permissions
+    ├── grafana-instance/  # Grafana datasource pointed to COO prometheus-operated
+    ├── servicemonitor/    # AAP ServiceMonitor with monitoredby label for COO discovery
+    └── dashboards/        # Same dashboards as UWM path
 ```
 
 
@@ -110,39 +131,25 @@ aap-monitoring/
 - User with the cluster-admin cluster role
 - OpenShift 4.16+
 - Grafana Operator v5.21+
-- User-Defined Projects enabled
+- User-Defined Projects enabled (UWM path only; not required for the COO path)
 
 
 ## **Procedure**
 
+Both deployment paths use the Grafana Operator and share the same dashboards. Install the Grafana Operator first, then choose one of the two paths below.
 
-### **Enable user-defined projects**
-
-- Execute this command to add `enableUserWorkload: true` under `data/config.yaml`
-
-```shell
-oc -n openshift-monitoring patch configmap cluster-monitoring-config -p '{"data":{"config.yaml":"enableUserWorkload: true"}}'
-```
-
-&nbsp;
-
-- Validate that the **prometheus** and **thanos-ruler** pods were created in the **openshift-user-workload-monitoring** project
-
-```shell
-oc get pods -n openshift-user-workload-monitoring
-NAME                                                   READY   STATUS    RESTARTS   AGE
-prometheus-operator-cf59f9bdc-t7nvm                    2/2     Running   0          7h6m
-prometheus-user-workload-0                             6/6     Running   0          7h6m
-prometheus-user-workload-1                             6/6     Running   0          7h6m
-thanos-ruler-user-workload-0                           4/4     Running   0          7h6m
-thanos-ruler-user-workload-1                           4/4     Running   0          7h6m
-```
+| | User-Workload Monitoring | Cluster Observability Operator (COO) |
+|--|--------------------------|--------------------------------------|
+| Prometheus | Platform user-workload Prometheus | Dedicated COO `MonitoringStack` in `aap-monitoring` |
+| Grafana datasource | Thanos Querier (`openshift-monitoring`) | COO `prometheus-operated` (same namespace) |
+| Requires `enableUserWorkload` | Yes | No |
+| Kustomize overlay | `overlays/aap-grafana/` | `overlays/coo/` |
 
 &nbsp;
 
 ### **Install Grafana Operator**
 
-- First, create the **aap-monitoring** project where Grafana and its resources will be deployed:
+- Create the **aap-monitoring** project where Grafana and its resources will be deployed:
 
 ```shell
 oc new-project aap-monitoring
@@ -157,7 +164,9 @@ oc new-project aap-monitoring
 
 &nbsp;
 
-- Now let's set up the RBAC and secrets required for the Grafana instance. The Grafana Operator will automatically create a `grafana-sa` service account. We need to grant it permissions for OAuth authentication and metrics access.
+### **Create Grafana Instance**
+
+These resources are shared by both deployment paths. Apply them before proceeding to either the UWM or COO sections below.
 
 > **Note:** Instead of using a username/password, we use the OpenShift OAuth proxy to authenticate users with their existing OpenShift credentials.
 
@@ -210,23 +219,12 @@ subjects:
   - kind: ServiceAccount
     name: grafana-sa
     namespace: aap-monitoring
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: grafana-cluster-monitoring-view
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-monitoring-view
-subjects:
-  - kind: ServiceAccount
-    name: grafana-sa
-    namespace: aap-monitoring
 EOF
 ```
 
-- Create the session secret for the OAuth proxy and the service account token secret for Prometheus access:
+&nbsp;
+
+- Create the session secret for the OAuth proxy:
 
 ```shell
 cat <<EOF | oc apply -f -
@@ -239,20 +237,12 @@ metadata:
 data:
   session_secret: $(openssl rand -base64 43 | base64 -w 0)
 type: Opaque
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: grafana-auth-secret
-  namespace: aap-monitoring
-  annotations:
-    kubernetes.io/service-account.name: grafana-sa
-type: kubernetes.io/service-account-token
 EOF
 ```
+
 &nbsp;
 
-- Now let's create our Grafana instance with an OpenShift OAuth proxy sidecar. This enables authentication using existing OpenShift credentials instead of a separate username/password. The Route and Service with TLS are defined directly in the Grafana CR.
+- Create the Grafana instance with an OpenShift OAuth proxy sidecar. The Route and Service with TLS are defined directly in the Grafana CR:
 
 ```shell
 cat <<EOF > grafana-instance.yaml
@@ -382,7 +372,7 @@ EOF
 
 &nbsp;
 
-- Let's apply and validate our created Instance:
+- Apply and validate:
 
 ```shell
 oc -n aap-monitoring create -f grafana-instance.yaml
@@ -397,9 +387,73 @@ oc -n aap-monitoring get pods -l app=grafana
 ```shell
 oc -n aap-monitoring get route grafana-route -o jsonpath='{.spec.host}'
 ```
+
 &nbsp;
 
-- Let's create our **Grafana Datasource**, which will connect to **thanos-querier** in the **openshift-monitoring** project and will use the **grafana-sa** serviceaccount token stored in the `grafana-auth-secret`.
+### **User-Workload Monitoring**
+
+Use the OpenShift platform monitoring stack with user-defined projects enabled. Grafana queries metrics through Thanos Querier.
+
+&nbsp;
+
+#### **Enable user-defined projects**
+
+- Execute this command to add `enableUserWorkload: true` under `data/config.yaml`
+
+```shell
+oc -n openshift-monitoring patch configmap cluster-monitoring-config -p '{"data":{"config.yaml":"enableUserWorkload: true"}}'
+```
+
+&nbsp;
+
+- Validate that the **prometheus** and **thanos-ruler** pods were created in the **openshift-user-workload-monitoring** project
+
+```shell
+oc get pods -n openshift-user-workload-monitoring
+NAME                                                   READY   STATUS    RESTARTS   AGE
+prometheus-operator-cf59f9bdc-t7nvm                    2/2     Running   0          7h6m
+prometheus-user-workload-0                             6/6     Running   0          7h6m
+prometheus-user-workload-1                             6/6     Running   0          7h6m
+thanos-ruler-user-workload-0                           4/4     Running   0          7h6m
+thanos-ruler-user-workload-1                           4/4     Running   0          7h6m
+```
+
+&nbsp;
+
+#### **Creating Grafana Datasource**
+
+- Grant `grafana-sa` access to the platform Thanos Querier and create the service account token secret:
+
+```shell
+cat <<EOF | oc apply -f -
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: grafana-cluster-monitoring-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-monitoring-view
+subjects:
+  - kind: ServiceAccount
+    name: grafana-sa
+    namespace: aap-monitoring
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-auth-secret
+  namespace: aap-monitoring
+  annotations:
+    kubernetes.io/service-account.name: grafana-sa
+type: kubernetes.io/service-account-token
+EOF
+```
+
+&nbsp;
+
+- Create the **Grafana Datasource**, which connects to **thanos-querier** in **openshift-monitoring** using the `grafana-auth-secret` bearer token:
 
 ```shell
 cat <<EOF > grafana-datasource.yaml
@@ -456,7 +510,7 @@ grafana-ds                           119s          3d23h
 
 &nbsp;
 
-### **Creating User in Ansible Automation Platform**
+#### **Creating User in Ansible Automation Platform**
 
 - Access the AAP console and let's create a user for our monitoring.
 - To do this, in the left side menu, click on **Users** > **Add**
@@ -473,7 +527,7 @@ grafana-ds                           119s          3d23h
 
 &nbsp;
 
-### **Creating Prometheus ServiceMonitor**
+#### **Creating Prometheus ServiceMonitor**
 
 - Let's create a **ServiceMonitor** to collect metrics from our **AAP** and export through our **Prometheus** and **Thanos Querier**.
 - First, let's create a secret to store our bearer token, previously collected in **AAP** with the user **aap-metrics**.
@@ -540,7 +594,7 @@ aap-monitor   31m
 
 &nbsp;
 
-### **Creating Grafana Dashboards**
+#### **Creating Grafana Dashboards**
 
 - Now let's apply the AAP Grafana dashboards. Two dashboards are provided:
   - `grafana-aap-overview-dashboard.yaml` — **AAP - Overview** (license, inventory, capacity)
@@ -562,7 +616,7 @@ grafana-dashboard-aap-health                           3s            1m
 
 &nbsp;
 
-### **Viewing the Dashboards**
+#### **Viewing the Dashboards**
 
 - Access Grafana, in the left side menu, click on **Dashboards** and then on **Browse**
 - A folder with the name **AAP Dashboards** will be displayed, containing two dashboards:
@@ -589,9 +643,33 @@ grafana-dashboard-aap-health                           3s            1m
 
 &nbsp;
 
-### **Kustomize Deployment (Alternative)**
+#### **Kustomize Deployment (UWM)**
 
-If you prefer a GitOps-friendly approach, you can deploy all resources using the Kustomize overlays. Deploy in this order:
+If you prefer a GitOps-friendly approach, deploy all UWM resources using the Kustomize overlays. The overlays include all Kubernetes resources described in the manual steps above (RBAC, Grafana instance, datasource, ServiceMonitor, dashboards).
+
+**Prerequisites (not included in the overlays):**
+
+1. Enable user-workload-monitoring ([Enable user-defined projects](#enable-user-defined-projects))
+2. Install the Grafana Operator from OperatorHub ([Install Grafana Operator](#install-grafana-operator))
+3. Create the AAP bearer token secret in the `aap` namespace ([Creating User in Ansible Automation Platform](#creating-user-in-ansible-automation-platform)):
+   ```shell
+   oc create secret generic aap-monitor-creds --from-literal=token={{ YOUR AAP BEARER TOKEN }} -n aap
+   ```
+4. Update the OAuth proxy image tag in `common/base/core/grafana.yaml` to match your OpenShift version. For example, if you are running OpenShift 4.18, change the image to:
+   ```
+   registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:v4.18
+   ```
+   If the Red Hat image is not accessible in your environment, use the upstream image instead:
+   ```
+   quay.io/openshift/origin-oauth-proxy
+   ```
+5. Update the session secret in `common/base/core/session-secret.yaml`:
+   ```shell
+   openssl rand -base64 43 | base64 -w 0
+   ```
+   Replace the `session_secret` value with the generated output.
+
+**Deploy in this order:**
 
 ```shell
 # 1. RBAC and namespace
@@ -607,24 +685,391 @@ oc apply -k overlays/aap-grafana/servicemonitor/
 oc apply -k overlays/aap-grafana/dashboards/
 ```
 
-> **Important:** Before deploying to production:
->
-> 1. Update the OAuth proxy image tag in `common/base/core/grafana.yaml` to match your OpenShift version. For example, if you are running OpenShift 4.18, change the image to:
->    ```
->    registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:v4.18
->    ```
->    If the Red Hat image is not accessible in your environment, use the upstream image instead:
->    ```
->    quay.io/openshift/origin-oauth-proxy
->    ```
->
-> 2. Update the session secret in `common/base/core/session-secret.yaml`:
->    ```shell
->    openssl rand -base64 43 | base64 -w 0
->    ```
->    Replace the `session_secret` value with the generated output.
+
+### **Cluster Observability Operator (COO)**
+
+Deploy a dedicated Prometheus instance via COO when user-workload-monitoring is not available or not desired. Grafana queries the local `prometheus-operated` service; COO Prometheus scrapes AAP metrics, platform kube-state-metrics, and kubelet/cAdvisor for Resource Health panels.
+
+> **Note:** Do **not** enable user-defined projects for this path. Start directly with installing the COO operator below.
+
+&nbsp;
+
+#### **Install Cluster Observability Operator**
+
+- Using the **WebConsole**, in the left side menu, select **OperatorHub** and search for **Cluster Observability Operator**.
+- Click on the operator, click **Install**.
+- In **Installation Mode**, select **All namespaces on the cluster**.
+- In **Update approval**, select **Automatic**.
+- Click **Install**.
+
+&nbsp;
+
+- Validate that the operator pod is running:
+
+```shell
+oc get pods -n openshift-cluster-observability-operator
+```
+
+&nbsp;
+
+#### **COO Prometheus Scrape Permissions**
+
+- Grant the COO Prometheus service account permission to discover nodes, scrape kubelet/cAdvisor, and reach `kube-state-metrics` in `openshift-monitoring`:
+
+```shell
+cat <<EOF | oc apply -f -
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aap-coo-prometheus-scrape
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/metrics
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: aap-coo-prometheus-scrape
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aap-coo-prometheus-scrape
+subjects:
+  - kind: ServiceAccount
+    name: aap-monitoring-stack-prometheus
+    namespace: aap-monitoring
+EOF
+```
+
+> **Note:** The service account name `aap-monitoring-stack-prometheus` is created automatically by COO when the `MonitoringStack` CR is applied. Apply the RBAC binding **before** or **after** the MonitoringStack; COO will bind permissions once the SA exists.
+
+&nbsp;
+
+#### **Creating the MonitoringStack**
+
+- The `MonitoringStack` CR tells COO to provision a Prometheus instance in `aap-monitoring`. The `resourceSelector` discovers any `ServiceMonitor` or `ScrapeConfig` labeled with `monitoredby: aap-monitoring`.
+
+```shell
+cat <<EOF | oc apply -f -
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: MonitoringStack
+metadata:
+  name: aap-monitoring-stack
+  namespace: aap-monitoring
+  labels:
+    app: aap-monitoring
+spec:
+  alertmanagerConfig:
+    disabled: true
+  prometheusConfig:
+    replicas: 1
+    retention: 7d
+    retentionSize: 40GB
+    scrapeInterval: 30s
+    persistentVolumeClaim:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 50Gi
+  logLevel: info
+  namespaceSelector: {}
+  resourceSelector:
+    matchLabels:
+      monitoredby: aap-monitoring
+EOF
+```
+
+&nbsp;
+
+- Validate that the MonitoringStack and Prometheus pod are ready:
+
+```shell
+oc -n aap-monitoring get monitoringstack aap-monitoring-stack
+oc -n aap-monitoring get pods -l app.kubernetes.io/managed-by=observability-operator
+oc -n aap-monitoring get svc prometheus-operated
+```
+
+&nbsp;
+
+#### **Scraping kube-state-metrics (KSM)**
+
+- The health dashboard needs `kube_deployment_*` metrics. Instead of Thanos, the COO Prometheus scrapes the platform `kube-state-metrics` service in `openshift-monitoring` via a cross-namespace `ServiceMonitor` (`monitoring.rhobs/v1`).
+
+```shell
+cat <<EOF | oc apply -f -
+---
+apiVersion: monitoring.rhobs/v1
+kind: ServiceMonitor
+metadata:
+  name: ksm-scrape
+  namespace: aap-monitoring
+  labels:
+    monitoredby: aap-monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - openshift-monitoring
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kube-state-metrics
+  endpoints:
+    - port: https-main
+      scheme: https
+      tlsConfig:
+        caFile: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+        serverName: kube-state-metrics.openshift-monitoring.svc
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      honorLabels: true
+EOF
+```
+
+> **Note:** KSM uses the OpenShift service CA (`service-ca.crt`) with an explicit `serverName`. This is different from kubelet scraping — KSM TLS verification works without `insecureSkipVerify`.
+
+&nbsp;
+
+#### **Scraping kubelet cAdvisor (Resource Health)**
+
+- Resource Health panels need container CPU and memory metrics. A `ScrapeConfig` with Kubernetes Node service discovery scrapes `/metrics/cadvisor` on every node. A `metricRelabelings` keep filter limits storage to only the four metrics the dashboard uses.
+
+```shell
+cat <<EOF | oc apply -f -
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prometheus-sa-token
+  namespace: aap-monitoring
+  annotations:
+    kubernetes.io/service-account.name: aap-monitoring-stack-prometheus
+type: kubernetes.io/service-account-token
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubelet-cadvisor
+  namespace: aap-monitoring
+  labels:
+    monitoredby: aap-monitoring
+spec:
+  scrapeInterval: 30s
+  scheme: HTTPS
+  metricsPath: /metrics/cadvisor
+  honorLabels: true
+  authorization:
+    credentials:
+      name: prometheus-sa-token
+      key: token
+  tlsConfig:
+    insecureSkipVerify: true
+  kubernetesSDConfigs:
+    - role: Node
+  relabelings:
+    - sourceLabels: [__address__]
+      regex: (.+?)(?::\d+)?
+      replacement: ${1}:10250
+      targetLabel: __address__
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+  metricRelabelings:
+    - action: keep
+      sourceLabels: [__name__]
+      regex: "container_cpu_usage_seconds_total|container_memory_working_set_bytes|container_memory_usage_bytes|container_fs_usage_bytes"
+EOF
+```
+
+> **TLS note:** The cAdvisor `ScrapeConfig` uses `insecureSkipVerify: true` for kubelet TLS. The kubelet-serving CA is managed by the Cluster Monitoring Operator and rotates frequently; no auto-injection mechanism exists to sync it to other namespaces. Bearer token authentication still verifies the Prometheus SA identity. This is internal cluster traffic only.
+
+&nbsp;
+
+- Verify scrape targets after COO Prometheus has reconciled (allow 1–2 minutes):
+
+```shell
+oc -n aap-monitoring port-forward svc/prometheus-operated 9090:9090 &
+curl -s http://localhost:9090/api/v1/targets | python3 -m json.tool | grep -E '"job"|"health"'
+```
+
+&nbsp;
+
+#### **Creating Grafana Datasource (COO)**
+
+- Create the **GrafanaDatasource** pointing at the COO Prometheus service. No bearer token or TLS skip is needed — Grafana and Prometheus run in the same namespace:
+
+```shell
+cat <<EOF | oc apply -f -
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: grafana-ds
+  namespace: aap-monitoring
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  datasource:
+    name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus-operated.aap-monitoring.svc.cluster.local:9090
+    isDefault: true
+    jsonData:
+      timeInterval: "5s"
+    editable: true
+EOF
+```
+
+&nbsp;
+
+- Validate the Grafana instance and datasource:
+
+```shell
+oc -n aap-monitoring get pods -l app=grafana
+oc -n aap-monitoring get grafanadatasource
+oc -n aap-monitoring get route grafana-route -o jsonpath='{.spec.host}'
+```
+
+&nbsp;
+
+#### **Creating Prometheus ServiceMonitor (COO)**
+
+- Create the AAP metrics user and bearer token secret the same way as in [Creating User in Ansible Automation Platform](#creating-user-in-ansible-automation-platform).
+
+```shell
+oc create secret generic aap-monitor-creds --from-literal=token={{ YOUR AAP BEARER TOKEN }} -n aap
+```
+
+&nbsp;
+
+- Create the AAP `ServiceMonitor` using the COO API (`monitoring.rhobs/v1`) and label it so the MonitoringStack discovers it:
+
+```shell
+cat <<EOF | oc apply -f -
+---
+apiVersion: monitoring.rhobs/v1
+kind: ServiceMonitor
+metadata:
+  name: aap-monitor
+  namespace: aap
+  labels:
+    monitoredby: aap-monitoring
+spec:
+  endpoints:
+  - interval: 30s
+    scrapeTimeout: 10s
+    honor_labels: true
+    path: /api/controller/v2/metrics/
+    port: http
+    scheme: http
+    bearerTokenSecret:
+      key: token
+      name: aap-monitor-creds
+  namespaceSelector:
+    matchNames:
+    - aap
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: aap
+EOF
+```
+
+&nbsp;
+
+- Validate the ServiceMonitor and confirm AAP targets appear in COO Prometheus:
+
+```shell
+oc get servicemonitor -n aap
+oc -n aap-monitoring port-forward svc/prometheus-operated 9090:9090 &
+curl -s http://localhost:9090/api/v1/targets | python3 -m json.tool | grep -A2 'aap'
+```
+
+&nbsp;
+
+#### **Creating Grafana Dashboards (COO)**
+
+- Apply the same dashboard manifests as the UWM path:
+
+```shell
+oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-overview-dashboard.yaml
+oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-health-dashboard.yaml
+```
+
+&nbsp;
+
+- Validate:
+
+```shell
+oc -n aap-monitoring get grafanadashboard
+```
+
+&nbsp;
+
+#### **Viewing the Dashboards (COO)**
+
+- Access Grafana via the route URL, authenticate with OpenShift credentials, and open **Dashboards** > **Browse** > **AAP Dashboards**.
+- The **AAP - Overview** and **AAP - Health & Monitoring** dashboards are the same as in the UWM path. Resource Health panels populate once cAdvisor scraping is active.
+
+&nbsp;
+
+#### **Kustomize Deployment (COO)**
+
+If you prefer a GitOps-friendly approach, deploy all COO resources using the Kustomize overlays. The overlays include all Kubernetes resources described in the manual steps above (RBAC, COO scrape permissions, MonitoringStack, KSM ServiceMonitor, cAdvisor ScrapeConfig, Grafana instance, datasource, AAP ServiceMonitor, dashboards).
+
+**Prerequisites (not included in the overlays):**
+
+1. Install the Cluster Observability Operator from OperatorHub ([Install Cluster Observability Operator](#install-cluster-observability-operator))
+2. Install the Grafana Operator from OperatorHub ([Install Grafana Operator](#install-grafana-operator))
+3. Create the AAP bearer token secret in the `aap` namespace ([Creating User in Ansible Automation Platform](#creating-user-in-ansible-automation-platform)):
+   ```shell
+   oc create secret generic aap-monitor-creds --from-literal=token={{ YOUR AAP BEARER TOKEN }} -n aap
+   ```
+4. Update the OAuth proxy image tag in `common/base/core/grafana.yaml` to match your OpenShift version. For example, if you are running OpenShift 4.18, change the image to:
+   ```
+   registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:v4.18
+   ```
+   If the Red Hat image is not accessible in your environment, use the upstream image instead:
+   ```
+   quay.io/openshift/origin-oauth-proxy
+   ```
+5. Update the session secret in `common/base/core/session-secret.yaml`:
+   ```shell
+   openssl rand -base64 43 | base64 -w 0
+   ```
+   Replace the `session_secret` value with the generated output.
+
+**Deploy in this order:**
+
+```shell
+# 1. RBAC and namespace (Grafana OAuth RBAC + COO Prometheus scrape permissions; no cluster-monitoring-view)
+oc apply -k overlays/coo/infrastructure-rbac/
+
+# 2. MonitoringStack CR + KSM ServiceMonitor + cAdvisor ScrapeConfig
+oc apply -k overlays/coo/monitoring-stack/
+
+# 3. Grafana instance and datasource (datasource patched to prometheus-operated)
+oc apply -k overlays/coo/grafana-instance/
+
+# 4. AAP ServiceMonitor (monitoring.rhobs/v1 + monitoredby label)
+oc apply -k overlays/coo/servicemonitor/
+
+# 5. Auth secret and dashboards
+oc apply -k overlays/coo/dashboards/
+```
 
 
 ## **Conclusion**
 
-Using User-Defined Projects from the OpenShift Monitoring stack, we created monitoring for the Ansible Automation Platform, using two Grafana Dashboards: an **Overview** dashboard for platform configuration and inventory, and a **Health & Monitoring** dashboard for real-time component health, service accessibility, job status, latency, and resource consumption within OpenShift.
+This repository provides two deployment paths for monitoring Ansible Automation Platform on OpenShift — **User-Workload Monitoring** (platform Prometheus + Thanos Querier) and **Cluster Observability Operator** (dedicated COO Prometheus). Both deliver the same two Grafana dashboards: an **Overview** dashboard for platform configuration and inventory, and a **Health & Monitoring** dashboard for real-time component health, service accessibility, job status, latency, and resource consumption.
