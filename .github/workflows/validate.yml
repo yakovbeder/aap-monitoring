@@ -61,34 +61,27 @@ jobs:
           import json
           from pathlib import Path
 
+          import yaml
+
           dashboard_files = [
               Path("common/base/dashboards/grafana-aap-overview-dashboard.yaml"),
               Path("common/base/dashboards/grafana-aap-health-dashboard.yaml"),
           ]
 
           for path in dashboard_files:
-              lines = path.read_text().splitlines()
+              with path.open() as handle:
+                  documents = list(yaml.safe_load_all(handle))
 
-              try:
-                  start_index = lines.index("  json: |") + 1
-              except ValueError as exc:
-                  raise SystemExit(f"{path}: missing spec.json block") from exc
+              if not documents:
+                  raise SystemExit(f"{path}: empty YAML document")
 
-              json_lines = []
-              for line in lines[start_index:]:
-                  if line.startswith("    "):
-                      json_lines.append(line[4:])
-                      continue
+              dashboard_json = documents[0].get("spec", {}).get("json")
+              if not dashboard_json:
+                  raise SystemExit(f"{path}: missing spec.json")
 
-                  if not line.strip():
-                      json_lines.append("")
-                      continue
+              if not isinstance(dashboard_json, str):
+                  raise SystemExit(f"{path}: spec.json must be a string")
 
-                  break
-
-              if not json_lines:
-                  raise SystemExit(f"{path}: empty spec.json block")
-
-              json.loads("\n".join(json_lines))
+              json.loads(dashboard_json)
               print(f"validated {path}")
           PY

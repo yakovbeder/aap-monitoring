@@ -66,13 +66,24 @@ The "what do we have" dashboard. Shows the platform's configuration, inventory, 
 
 The "is everything working" dashboard. Monitors real-time health of all AAP components:
 
-- **AAP Instance Components** — HEALTHY/CRITICAL status for Gateway, Controller (Web + Task), Hub (API, Web, Content, Worker, Redis), EDA (API, Scheduler, Activation Workers, Default Workers, Event Stream), and MCP. Shows available/desired replica ratio.
-- **Operator Health** — Individual status for each operator: Gateway, Controller, Hub, EDA, Resource, Metrics, and Lightspeed (shows NOT INSTALLED if absent).
+- **AAP Instance Components** — Health status for Gateway, Controller (Web + Task), Hub (API, Web, Content, Worker, Redis), EDA (API, Scheduler, Activation Workers, Default Workers, Event Stream), and MCP. Detects stuck rollouts and crashing pods during updates.
+- **Operator Health** — Individual status for each operator: Gateway, Controller, Hub, EDA, Resource, Metrics, and Lightspeed.
 - **Service Accessibility** — UP/DOWN for UI (gateway backend readiness), API (controller metrics endpoint reachability), PostgreSQL (controller-observed connectivity, works with both internal and external DB), Redis Cluster replicas and pod-level health.
 - **Jobs Status** — Running, Pending, Failed jobs, Blocked Tasks, and Consumed Capacity. Includes time-series breakdown with deduplicated metrics.
 - **Latency** — Gateway/API processing time, PostgreSQL transaction latency, and Task Manager execution time.
 - **Resource Health** — Peak CPU and Memory usage as % of configured limits with green/yellow/red thresholds, total namespace resource consumption, and top 5 consumers shown as instant bar gauges.
 - **Event Processing** — Redis queue depth, in-memory events, and average event processing time.
+
+**Panel states:**
+
+| State | Color | Meaning |
+|-------|-------|---------|
+| HEALTHY | Green | All desired replicas are available, no unavailable replicas |
+| DEGRADED | Yellow | At least one replica available, but one or more replicas unavailable (e.g., stuck rollout, crashing pod during update) |
+| CRITICAL | Red | Zero replicas available |
+| NOT INSTALLED | Gray | Optional component is not deployed in this environment |
+
+Optional components (EDA, MCP, Hub Redis, Lightspeed, Metrics) show a neutral gray **NOT INSTALLED** when not deployed, instead of a red alarm.
 
 Every panel includes a tooltip (?) explaining what it monitors and why it matters.
 
