@@ -761,6 +761,7 @@ EOF
 #### **Creating the MonitoringStack**
 
 - The `MonitoringStack` CR tells COO to provision a Prometheus instance in `aap-monitoring`. The `resourceSelector` discovers any `ServiceMonitor` or `ScrapeConfig` labeled with `monitoredby: aap-monitoring`.
+- `spec.resources` sets Prometheus CPU and memory. COO defaults to a 512Mi memory limit, which is often too low once cAdvisor scraping, kube-state-metrics, and AAP ServiceMonitors are enabled — Prometheus can be OOMKilled during WAL replay or compaction. The values below leave CPU at COO defaults and raise memory only.
 
 ```shell
 cat <<EOF | oc apply -f -
@@ -787,6 +788,13 @@ spec:
         requests:
           storage: 50Gi
   logLevel: info
+  resources:
+    requests:
+      cpu: 100m
+      memory: 2Gi
+    limits:
+      cpu: 500m
+      memory: 4Gi
   namespaceSelector: {}
   resourceSelector:
     matchLabels:
