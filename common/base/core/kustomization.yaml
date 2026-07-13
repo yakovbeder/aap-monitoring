@@ -7,4 +7,5 @@ resources:
   - injected-certs-cm.yaml
   - grafana.yaml
   - grafana-ds.yaml
+  - grafana-ds-postgres.yaml
   - grafana-folder.yaml

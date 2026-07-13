@@ -1,0 +1,1164 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  labels:
+    app: grafana
+  name: grafana-dashboard-aap-jobs
+spec:
+  folder: AAP Dashboards
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "datasource",
+              "uid": "grafana"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "description": "Drill-down into Ansible Automation Platform jobs from the Controller PostgreSQL database. Filter by status and template, select a job, and inspect per-host results.",
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 100,
+          "panels": [],
+          "title": "Job status summary",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Count of unified jobs with status=successful.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 0,
+            "y": 1
+          },
+          "id": 1,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT COUNT(*) AS \"Successful\" FROM main_unifiedjob WHERE status = 'successful';",
+              "refId": "A"
+            }
+          ],
+          "title": "Successful",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Count of unified jobs with status=failed.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 4,
+            "y": 1
+          },
+          "id": 11,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT COUNT(*) AS \"Failed\" FROM main_unifiedjob WHERE status = 'failed';",
+              "refId": "A"
+            }
+          ],
+          "title": "Failed",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Count of unified jobs with status=error.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 8,
+            "y": 1
+          },
+          "id": 12,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT COUNT(*) AS \"Error\" FROM main_unifiedjob WHERE status = 'error';",
+              "refId": "A"
+            }
+          ],
+          "title": "Error",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Count of unified jobs with status=canceled.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 11,
+            "y": 1
+          },
+          "id": 13,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT COUNT(*) AS \"Canceled\" FROM main_unifiedjob WHERE status = 'canceled';",
+              "refId": "A"
+            }
+          ],
+          "title": "Canceled",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Count of unified jobs with status=running.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 14,
+            "y": 1
+          },
+          "id": 14,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT COUNT(*) AS \"Running\" FROM main_unifiedjob WHERE status = 'running';",
+              "refId": "A"
+            }
+          ],
+          "title": "Running",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Count of unified jobs with status=pending.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 17,
+            "y": 1
+          },
+          "id": 15,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT COUNT(*) AS \"Pending\" FROM main_unifiedjob WHERE status = 'pending';",
+              "refId": "A"
+            }
+          ],
+          "title": "Pending",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Count of unified jobs with status=waiting.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 20,
+            "y": 1
+          },
+          "id": 16,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT COUNT(*) AS \"Waiting\" FROM main_unifiedjob WHERE status = 'waiting';",
+              "refId": "A"
+            }
+          ],
+          "title": "Waiting",
+          "type": "stat"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 6
+          },
+          "id": 101,
+          "panels": [],
+          "title": "Jobs",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Recent unified jobs filtered by status and job template. Hosts is the count of main_jobhostsummary rows (0 means no per-host drill-down). Click a Job ID to select it and load host results / failed messages below.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Job ID"
+                },
+                "properties": [
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "title": "Select job",
+                        "url": "/d/${__dashboard.uid}/${__dashboard}?${job_status:queryparam}&${job_template:queryparam}&var-job_id=${__value.raw}&var-host_name=All"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Status"
+                },
+                "properties": [
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "successful": {
+                            "color": "green",
+                            "index": 0,
+                            "text": "successful"
+                          },
+                          "failed": {
+                            "color": "red",
+                            "index": 1,
+                            "text": "failed"
+                          },
+                          "error": {
+                            "color": "red",
+                            "index": 2,
+                            "text": "error"
+                          },
+                          "canceled": {
+                            "color": "orange",
+                            "index": 3,
+                            "text": "canceled"
+                          },
+                          "running": {
+                            "color": "blue",
+                            "index": 4,
+                            "text": "running"
+                          },
+                          "pending": {
+                            "color": "yellow",
+                            "index": 5,
+                            "text": "pending"
+                          },
+                          "waiting": {
+                            "color": "yellow",
+                            "index": 6,
+                            "text": "waiting"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Failed"
+                },
+                "properties": [
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "true": {
+                            "color": "red",
+                            "index": 0,
+                            "text": "true"
+                          },
+                          "false": {
+                            "color": "green",
+                            "index": 1,
+                            "text": "false"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 7
+          },
+          "id": 2,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "Started"
+              }
+            ]
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  uj.id AS \"Job ID\",\n  uj.name AS \"Job Name\",\n  ujt.name AS \"Template\",\n  uj.status AS \"Status\",\n  uj.failed AS \"Failed\",\n  uj.launch_type AS \"Launch Type\",\n  COUNT(jhs.id) AS \"Hosts\",\n  uj.started AS \"Started\",\n  uj.finished AS \"Finished\"\nFROM main_unifiedjob uj\nLEFT JOIN main_unifiedjobtemplate ujt\n  ON uj.unified_job_template_id = ujt.id\nLEFT JOIN main_jobhostsummary jhs\n  ON jhs.job_id = uj.id\nWHERE uj.status IN (${job_status:sqlstring})\n  AND (\n    ${job_template} = -1\n    OR uj.unified_job_template_id IN (${job_template})\n  )\nGROUP BY uj.id, uj.name, ujt.name, uj.status, uj.failed, uj.launch_type, uj.started, uj.finished\nORDER BY uj.started DESC NULLS LAST\nLIMIT 200;",
+              "refId": "A"
+            }
+          ],
+          "title": "Jobs",
+          "type": "table"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 17
+          },
+          "id": 102,
+          "panels": [],
+          "title": "Host results for selected job",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Per-host summary for the selected job_id from main_jobhostsummary. Select a Job ID (or click one in the Jobs table) first \u2014 panels stay empty until then. Click a host_name to set the Host variable and filter failed messages below. Jobs with Hosts = 0 show No data here.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "host_name"
+                },
+                "properties": [
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "title": "Select host",
+                        "url": "/d/${__dashboard.uid}/${__dashboard}?${job_status:queryparam}&${job_template:queryparam}&var-job_id=${job_id}&var-host_name=${__value.raw}"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "failures"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background",
+                      "mode": "basic"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "transparent",
+                          "value": null
+                        },
+                        {
+                          "color": "red",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "unreachable"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background",
+                      "mode": "basic"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "transparent",
+                          "value": null
+                        },
+                        {
+                          "color": "orange",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "failed"
+                },
+                "properties": [
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "true": {
+                            "color": "red",
+                            "index": 0,
+                            "text": "true"
+                          },
+                          "false": {
+                            "color": "green",
+                            "index": 1,
+                            "text": "false"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 18
+          },
+          "id": 3,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "failures"
+              }
+            ]
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  host_name,\n  ok,\n  changed,\n  failures,\n  dark AS unreachable,\n  skipped,\n  processed,\n  failed\nFROM main_jobhostsummary\nWHERE ${job_id} <> 0\n  AND job_id = ${job_id}\nORDER BY failures DESC, dark DESC, host_name;",
+              "refId": "A"
+            }
+          ],
+          "title": "Host results (job_id = $job_id)",
+          "type": "table"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 26
+          },
+          "id": 103,
+          "panels": [],
+          "title": "Failed messages for selected job",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "aap-postgres"
+          },
+          "description": "Failed/unreachable task messages from main_jobevent for the selected job and host. Select a Job ID first. Includes task name and failed_message. Choose Host = All for every host, or pick one host (or click host_name in Host results).",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "failed_message"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 600
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 27
+          },
+          "id": 4,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  host_name,\n  task,\n  event,\n  COALESCE(\n    NULLIF(event_data::jsonb->>'msg', ''),\n    NULLIF(event_data::jsonb#>>'{res,msg}', ''),\n    LEFT(regexp_replace(COALESCE(stdout, ''), E'\\\\x1b\\\\[[0-9;]*m', '', 'g'), 500)\n  ) AS failed_message\nFROM main_jobevent\nWHERE ${job_id} <> 0\n  AND job_id = ${job_id}\n  AND failed = true\n  AND event IN ('runner_on_failed', 'runner_item_on_failed', 'runner_on_unreachable', 'runner_on_async_failed')\n  AND (\n    '${host_name}' = '.*'\n    OR host_name = '${host_name}'\n  )\nORDER BY counter\nLIMIT 200;",
+              "refId": "A"
+            }
+          ],
+          "title": "Failed messages (job_id = $job_id, host = $host_name)",
+          "type": "table"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": [
+        "aap",
+        "jobs",
+        "ansible"
+      ],
+      "templating": {
+        "list": [
+          {
+            "allValue": null,
+            "current": {
+              "selected": true,
+              "text": [
+                "failed"
+              ],
+              "value": [
+                "failed"
+              ]
+            },
+            "hide": 0,
+            "includeAll": true,
+            "label": "Job status",
+            "multi": true,
+            "name": "job_status",
+            "options": [
+              {
+                "selected": true,
+                "text": "failed",
+                "value": "failed"
+              },
+              {
+                "selected": false,
+                "text": "successful",
+                "value": "successful"
+              },
+              {
+                "selected": false,
+                "text": "canceled",
+                "value": "canceled"
+              },
+              {
+                "selected": false,
+                "text": "error",
+                "value": "error"
+              },
+              {
+                "selected": false,
+                "text": "running",
+                "value": "running"
+              },
+              {
+                "selected": false,
+                "text": "pending",
+                "value": "pending"
+              },
+              {
+                "selected": false,
+                "text": "waiting",
+                "value": "waiting"
+              }
+            ],
+            "query": "failed,successful,canceled,error,running,pending,waiting",
+            "skipUrlSync": false,
+            "type": "custom"
+          },
+          {
+            "allValue": "-1",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            "datasource": {
+              "type": "grafana-postgresql-datasource",
+              "uid": "aap-postgres"
+            },
+            "definition": "SELECT name AS __text, id::text AS __value FROM main_unifiedjobtemplate ORDER BY name;",
+            "hide": 0,
+            "includeAll": true,
+            "label": "Job template",
+            "multi": true,
+            "name": "job_template",
+            "options": [],
+            "query": "SELECT name AS __text, id::text AS __value FROM main_unifiedjobtemplate ORDER BY name;",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 1,
+            "type": "query"
+          },
+          {
+            "current": {
+              "selected": true,
+              "text": "\u2014 Select a job \u2014",
+              "value": "0"
+            },
+            "datasource": {
+              "type": "grafana-postgresql-datasource",
+              "uid": "aap-postgres"
+            },
+            "definition": "SELECT '\u2014 Select a job \u2014' AS __text, '0' AS __value\nUNION ALL\nSELECT * FROM (\n  SELECT\n    uj.id::text || ' \u2014 ' || COALESCE(uj.name, '') || ' (' || COUNT(jhs.id)::text\n      || CASE WHEN COUNT(jhs.id) = 1 THEN ' host)' ELSE ' hosts)' END AS __text,\n    uj.id::text AS __value\n  FROM main_unifiedjob uj\n  LEFT JOIN main_jobhostsummary jhs ON jhs.job_id = uj.id\n  WHERE uj.status IN (${job_status:sqlstring})\n    AND (\n      ${job_template} = -1\n      OR uj.unified_job_template_id IN (${job_template})\n    )\n  GROUP BY uj.id, uj.name, uj.started\n  ORDER BY (COUNT(jhs.id) > 0) DESC, uj.started DESC NULLS LAST\n  LIMIT 200\n) jobs;",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Job ID",
+            "multi": false,
+            "name": "job_id",
+            "options": [],
+            "query": "SELECT '\u2014 Select a job \u2014' AS __text, '0' AS __value\nUNION ALL\nSELECT * FROM (\n  SELECT\n    uj.id::text || ' \u2014 ' || COALESCE(uj.name, '') || ' (' || COUNT(jhs.id)::text\n      || CASE WHEN COUNT(jhs.id) = 1 THEN ' host)' ELSE ' hosts)' END AS __text,\n    uj.id::text AS __value\n  FROM main_unifiedjob uj\n  LEFT JOIN main_jobhostsummary jhs ON jhs.job_id = uj.id\n  WHERE uj.status IN (${job_status:sqlstring})\n    AND (\n      ${job_template} = -1\n      OR uj.unified_job_template_id IN (${job_template})\n    )\n  GROUP BY uj.id, uj.name, uj.started\n  ORDER BY (COUNT(jhs.id) > 0) DESC, uj.started DESC NULLS LAST\n  LIMIT 200\n) jobs;",
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "type": "query"
+          },
+          {
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            "datasource": {
+              "type": "grafana-postgresql-datasource",
+              "uid": "aap-postgres"
+            },
+            "definition": "SELECT DISTINCT host_name AS __text, host_name AS __value\nFROM main_jobhostsummary\nWHERE job_id = ${job_id}\n  AND host_name IS NOT NULL\n  AND host_name <> ''\nORDER BY host_name;",
+            "hide": 0,
+            "includeAll": true,
+            "label": "Host",
+            "multi": false,
+            "name": "host_name",
+            "options": [],
+            "query": "SELECT DISTINCT host_name AS __text, host_name AS __value\nFROM main_jobhostsummary\nWHERE job_id = ${job_id}\n  AND host_name IS NOT NULL\n  AND host_name <> ''\nORDER BY host_name;",
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 1,
+            "type": "query"
+          }
+        ]
+      },
+      "time": {
+        "from": "now-24h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "AAP - Jobs",
+      "uid": "aap-jobs",
+      "version": 5,
+      "weekStart": ""
+    }

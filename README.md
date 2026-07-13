@@ -29,6 +29,10 @@
 ## Table of Contents
 
 - [About](#about)
+- [Dashboards](#dashboards)
+  - [AAP - Overview](#aap---overview)
+  - [AAP - Health & Monitoring](#aap---health--monitoring)
+  - [AAP - Jobs](#aap---jobs)
 - [Repository Structure](#repository-structure)
 - [Prerequisites](#prerequisites)
 - [Procedure](#procedure)
@@ -37,6 +41,8 @@
   - [User-Workload Monitoring](#user-workload-monitoring)
     - [Enable user-defined projects](#enable-user-defined-projects)
     - [Creating Grafana Datasource](#creating-grafana-datasource)
+    - [PostgreSQL datasource setup (Jobs)](#postgresql-datasource-setup-jobs)
+    - [External Controller database (Jobs)](#external-controller-database-jobs)
     - [Creating User in Ansible Automation Platform](#creating-user-in-ansible-automation-platform)
     - [Creating Prometheus ServiceMonitor](#creating-prometheus-servicemonitor)
     - [Creating Grafana Dashboards](#creating-grafana-dashboards)
@@ -49,6 +55,8 @@
     - [Scraping kube-state-metrics (KSM)](#scraping-kube-state-metrics-ksm)
     - [Scraping kubelet cAdvisor (Resource Health)](#scraping-kubelet-cadvisor-resource-health)
     - [Creating Grafana Datasource (COO)](#creating-grafana-datasource-coo)
+    - [PostgreSQL datasource setup (Jobs)](#postgresql-datasource-setup-jobs)
+    - [External Controller database (Jobs)](#external-controller-database-jobs)
     - [Creating Prometheus ServiceMonitor (COO)](#creating-prometheus-servicemonitor-coo)
     - [Creating Grafana Dashboards (COO)](#creating-grafana-dashboards-coo)
     - [Viewing the Dashboards (COO)](#viewing-the-dashboards-coo)
@@ -66,7 +74,7 @@
 
 ## **Dashboards**
 
-This repository provides two complementary Grafana dashboards with zero overlap:
+This repository provides three complementary Grafana dashboards:
 
 ### AAP - Overview
 
@@ -101,14 +109,25 @@ Optional components (EDA, MCP, Hub Redis, Lightspeed, Metrics) show a neutral gr
 
 Every panel includes a tooltip (?) explaining what it monitors and why it matters.
 
+### AAP - Jobs
+
+The "which jobs failed and on which hosts" dashboard. Queries the **Controller PostgreSQL** database (not Prometheus) for per-job and per-host drill-down:
+
+- **Job status summary** — Big-number counts of unified jobs by status (`successful`, `failed`, `error`, `canceled`, `running`, `pending`, `waiting`)
+- **Jobs table** — Filter by **Job status** and **Job template**; **Hosts** shows `main_jobhostsummary` row count (`0` means no host drill-down). Click a **Job ID** (or use the Job ID dropdown; default is **— Select a job —**) to load host results
+- **Host results** — Per-host summary (ok, changed, failures, unreachable, skipped, processed, failed) for the selected job; click **host_name** to set the **Host** filter
+- **Failed messages** — Task-level failure text from `main_jobevent` (`task` + `failed_message`) for the selected job and host (**Host = All** shows every failed host)
+
+Requires the Controller Postgres datasource — see [PostgreSQL datasource setup (Jobs)](#postgresql-datasource-setup-jobs). If Controller uses an external database, see [External Controller database (Jobs)](#external-controller-database-jobs).
+
 ## **Repository Structure**
 
 ```
 aap-monitoring/
 ├── common/base/
 │   ├── auth/              # Service account token secret
-│   ├── core/              # Grafana instance, datasource, session secret, certs, folder
-│   ├── dashboards/        # AAP Grafana dashboards (Overview + Health)
+│   ├── core/              # Grafana instance, datasources (Prometheus + Postgres), session secret, certs, folder
+│   ├── dashboards/        # AAP Grafana dashboards (Overview + Health + Jobs)
 │   ├── rbac/              # Namespace, ClusterRoles, RoleBindings
 │   ├── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
 │   └── coo/               # MonitoringStack, KSM ServiceMonitor, cAdvisor ScrapeConfig
@@ -510,6 +529,82 @@ grafana-ds                           119s          3d23h
 
 &nbsp;
 
+#### **PostgreSQL datasource setup (Jobs)**
+
+Required only for the **AAP - Jobs** dashboard (Overview and Health use Prometheus and do not need this).
+
+The Jobs dashboard uses Grafana datasource **AAP-PostgreSQL** (`uid: aap-postgres`), defined in `common/base/core/grafana-ds-postgres.yaml`. The Kustomize grafana-instance overlays deploy it with the Grafana instance.
+
+| Setting | Default (in-cluster Controller DB) |
+|---------|--------------------------------------|
+| URL | `aap-postgres-15.aap.svc.cluster.local:5432` |
+| Database | `automationcontroller` |
+| User / password | From secret `aap-controller-postgres-configuration` keys `username` / `password` |
+| SSL | `sslmode: disable` |
+
+Grafana Operator reads that secret from the **same namespace** as the datasource CR (`aap-monitoring`). The Operator creates the secret in the AAP namespace (`aap`); copy it before deploying the Grafana instance (not committed to git):
+
+```shell
+oc get secret aap-controller-postgres-configuration -n aap -o yaml \
+  | sed 's/namespace: aap/namespace: aap-monitoring/' \
+  | oc apply -f -
+```
+
+Confirm the datasource is healthy in Grafana (**Connections** → **Data sources** → **AAP-PostgreSQL** → **Save & test**), or:
+
+```shell
+oc -n aap-monitoring get grafanadatasource aap-postgres-grafanadatasource
+```
+
+If Controller uses an external PostgreSQL (not the in-cluster `aap-postgres-15` Service), follow [External Controller database (Jobs)](#external-controller-database-jobs) before relying on the Jobs dashboard.
+
+&nbsp;
+
+#### **External Controller database (Jobs)**
+
+Applies only when Ansible Automation Platform Controller stores its data in an **external** PostgreSQL (RDS, Azure Database, VM, etc.). Skip this section if you use the default in-cluster Controller Postgres.
+
+Overview and Health dashboards are unaffected; only **AAP - Jobs** talks to the Controller DB directly.
+
+1. **Credentials** — Keep (or recreate) a secret named `aap-controller-postgres-configuration` in `aap-monitoring` with at least:
+
+   | Key | Purpose |
+   |-----|---------|
+   | `username` | DB user Grafana should connect as (read-only recommended) |
+   | `password` | DB password |
+
+   You can copy the Operator-managed secret from `aap` (it already points at the external host in its `host` / `database` keys) and then patch only what Grafana needs, or create a dedicated secret with the same keys.
+
+2. **URL** — Patch `spec.datasource.url` in `common/base/core/grafana-ds-postgres.yaml` (or an overlay patch) to the reachable hostname and port, for example:
+
+   ```yaml
+   url: my-aap-db.xxxxx.us-east-1.rds.amazonaws.com:5432
+   ```
+
+   The Grafana pods in `aap-monitoring` must be able to reach that host (Security Groups, firewall, PrivateLink, Routes, etc.).
+
+3. **Database name** — Keep `automationcontroller` unless your Controller DB name differs; then set both `spec.datasource.database` and `spec.datasource.jsonData.database` accordingly.
+
+4. **TLS** — External DBs usually require SSL. In `spec.datasource.jsonData` set for example:
+
+   ```yaml
+   jsonData:
+     database: automationcontroller
+     sslmode: require   # or verify-full when you mount a CA
+     postgresVersion: 1500
+   ```
+
+   Change `postgresVersion` to match the server major version (for example `1400` for PostgreSQL 14).
+
+5. **Apply and test**
+
+   ```shell
+   oc apply -k overlays/aap-grafana/grafana-instance/   # or overlays/coo/grafana-instance/
+   # In Grafana: AAP-PostgreSQL → Save & test → Database Connection OK
+   ```
+
+&nbsp;
+
 #### **Creating User in Ansible Automation Platform**
 
 - Access the AAP console and let's create a user for our monitoring.
@@ -596,13 +691,15 @@ aap-monitor   31m
 
 #### **Creating Grafana Dashboards**
 
-- Now let's apply the AAP Grafana dashboards. Two dashboards are provided:
+- Now let's apply the AAP Grafana dashboards. Three dashboards are provided:
   - `grafana-aap-overview-dashboard.yaml` — **AAP - Overview** (license, inventory, capacity)
   - `grafana-aap-health-dashboard.yaml` — **AAP - Health & Monitoring** (component health, accessibility, jobs, latency, resource health)
+  - `grafana-aap-jobs-dashboard.yaml` — **AAP - Jobs** (PostgreSQL job/host drill-down)
 
 ```shell
 oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-overview-dashboard.yaml
 oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-health-dashboard.yaml
+oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-jobs-dashboard.yaml
 ```
 
 - Validate our created GrafanaDashboards:
@@ -612,6 +709,7 @@ oc -n aap-monitoring get grafanadashboard
 NAME                           NO MATCHING INSTANCES   LAST RESYNC   AGE
 grafana-dashboard-aap-overview                         3s            145m
 grafana-dashboard-aap-health                           3s            1m
+grafana-dashboard-aap-jobs                             3s            1m
 ```
 
 &nbsp;
@@ -619,9 +717,10 @@ grafana-dashboard-aap-health                           3s            1m
 #### **Viewing the Dashboards**
 
 - Access Grafana, in the left side menu, click on **Dashboards** and then on **Browse**
-- A folder with the name **AAP Dashboards** will be displayed, containing two dashboards:
+- A folder with the name **AAP Dashboards** will be displayed, containing three dashboards:
   - **AAP - Overview** — platform configuration, inventory, and capacity
   - **AAP - Health & Monitoring** — real-time health of all AAP components
+  - **AAP - Jobs** — filter jobs by status/template, select a job, inspect per-host results and failed messages
 
 ![](images/08.png)
 
@@ -643,6 +742,24 @@ grafana-dashboard-aap-health                           3s            1m
 
 &nbsp;
 
+- **AAP - Jobs** Dashboard
+
+![AAP - Jobs — status summary](images/jobs-dashboard-status.png)
+
+&nbsp;
+
+![AAP - Jobs — jobs table](images/jobs-dashboard-jobs.png)
+
+&nbsp;
+
+![AAP - Jobs — host results](images/jobs-dashboard-hosts.png)
+
+&nbsp;
+
+![AAP - Jobs — failed messages](images/jobs-dashboard-messages.png)
+
+&nbsp;
+
 #### **Kustomize Deployment (UWM)**
 
 If you prefer a GitOps-friendly approach, deploy all UWM resources using the Kustomize overlays. The overlays include all Kubernetes resources described in the manual steps above (RBAC, Grafana instance, datasource, ServiceMonitor, dashboards).
@@ -655,7 +772,13 @@ If you prefer a GitOps-friendly approach, deploy all UWM resources using the Kus
    ```shell
    oc create secret generic aap-monitor-creds --from-literal=token={{ YOUR AAP BEARER TOKEN }} -n aap
    ```
-4. Update the OAuth proxy image tag in `common/base/core/grafana.yaml` to match your OpenShift version. For example, if you are running OpenShift 4.18, change the image to:
+4. Copy the Controller Postgres configuration secret into `aap-monitoring` (required for the **AAP - Jobs** dashboard):
+   ```shell
+   oc get secret aap-controller-postgres-configuration -n aap -o yaml \
+     | sed 's/namespace: aap/namespace: aap-monitoring/' \
+     | oc apply -f -
+   ```
+5. Update the OAuth proxy image tag in `common/base/core/grafana.yaml` to match your OpenShift version. For example, if you are running OpenShift 4.18, change the image to:
    ```
    registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:v4.18
    ```
@@ -663,7 +786,7 @@ If you prefer a GitOps-friendly approach, deploy all UWM resources using the Kus
    ```
    quay.io/openshift/origin-oauth-proxy
    ```
-5. Update the session secret in `common/base/core/session-secret.yaml`:
+6. Update the session secret in `common/base/core/session-secret.yaml`:
    ```shell
    openssl rand -base64 43 | base64 -w 0
    ```
@@ -675,13 +798,13 @@ If you prefer a GitOps-friendly approach, deploy all UWM resources using the Kus
 # 1. RBAC and namespace
 oc apply -k overlays/aap-grafana/infrastructure-rbac/
 
-# 2. Grafana instance, datasource, and supporting resources
+# 2. Grafana instance, datasources (Prometheus + Postgres), and supporting resources
 oc apply -k overlays/aap-grafana/grafana-instance/
 
 # 3. ServiceMonitor for AAP metrics
 oc apply -k overlays/aap-grafana/servicemonitor/
 
-# 4. Auth secret and dashboards
+# 4. Auth secret and dashboards (Overview + Health + Jobs)
 oc apply -k overlays/aap-grafana/dashboards/
 ```
 
@@ -1008,11 +1131,12 @@ curl -s http://localhost:9090/api/v1/targets | python3 -m json.tool | grep -A2 '
 
 #### **Creating Grafana Dashboards (COO)**
 
-- Apply the same dashboard manifests as the UWM path:
+- Apply the same dashboard manifests as the UWM path (including **AAP - Jobs**):
 
 ```shell
 oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-overview-dashboard.yaml
 oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-health-dashboard.yaml
+oc -n aap-monitoring apply -f common/base/dashboards/grafana-aap-jobs-dashboard.yaml
 ```
 
 &nbsp;
@@ -1028,7 +1152,8 @@ oc -n aap-monitoring get grafanadashboard
 #### **Viewing the Dashboards (COO)**
 
 - Access Grafana via the route URL, authenticate with OpenShift credentials, and open **Dashboards** > **Browse** > **AAP Dashboards**.
-- The **AAP - Overview** and **AAP - Health & Monitoring** dashboards are the same as in the UWM path. Resource Health panels populate once cAdvisor scraping is active.
+- The **AAP - Overview**, **AAP - Health & Monitoring**, and **AAP - Jobs** dashboards are the same as in the UWM path (see [Viewing the Dashboards](#viewing-the-dashboards) and [AAP - Jobs](#aap---jobs)). Resource Health panels populate once cAdvisor scraping is active.
+- Jobs dashboard Postgres setup is shared with UWM: [PostgreSQL datasource setup (Jobs)](#postgresql-datasource-setup-jobs) and, if needed, [External Controller database (Jobs)](#external-controller-database-jobs).
 
 &nbsp;
 
@@ -1044,7 +1169,13 @@ If you prefer a GitOps-friendly approach, deploy all COO resources using the Kus
    ```shell
    oc create secret generic aap-monitor-creds --from-literal=token={{ YOUR AAP BEARER TOKEN }} -n aap
    ```
-4. Update the OAuth proxy image tag in `common/base/core/grafana.yaml` to match your OpenShift version. For example, if you are running OpenShift 4.18, change the image to:
+4. Copy the Controller Postgres configuration secret into `aap-monitoring` (required for the **AAP - Jobs** dashboard):
+   ```shell
+   oc get secret aap-controller-postgres-configuration -n aap -o yaml \
+     | sed 's/namespace: aap/namespace: aap-monitoring/' \
+     | oc apply -f -
+   ```
+5. Update the OAuth proxy image tag in `common/base/core/grafana.yaml` to match your OpenShift version. For example, if you are running OpenShift 4.18, change the image to:
    ```
    registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:v4.18
    ```
@@ -1052,7 +1183,7 @@ If you prefer a GitOps-friendly approach, deploy all COO resources using the Kus
    ```
    quay.io/openshift/origin-oauth-proxy
    ```
-5. Update the session secret in `common/base/core/session-secret.yaml`:
+6. Update the session secret in `common/base/core/session-secret.yaml`:
    ```shell
    openssl rand -base64 43 | base64 -w 0
    ```
@@ -1067,17 +1198,17 @@ oc apply -k overlays/coo/infrastructure-rbac/
 # 2. MonitoringStack CR + KSM ServiceMonitor + cAdvisor ScrapeConfig
 oc apply -k overlays/coo/monitoring-stack/
 
-# 3. Grafana instance and datasource (datasource patched to prometheus-operated)
+# 3. Grafana instance and datasources (Prometheus patched to prometheus-operated; Postgres for Jobs)
 oc apply -k overlays/coo/grafana-instance/
 
 # 4. AAP ServiceMonitor (monitoring.rhobs/v1 + monitoredby label)
 oc apply -k overlays/coo/servicemonitor/
 
-# 5. Auth secret and dashboards
+# 5. Auth secret and dashboards (Overview + Health + Jobs)
 oc apply -k overlays/coo/dashboards/
 ```
 
 
 ## **Conclusion**
 
-This repository provides two deployment paths for monitoring Ansible Automation Platform on OpenShift — **User-Workload Monitoring** (platform Prometheus + Thanos Querier) and **Cluster Observability Operator** (dedicated COO Prometheus). Both deliver the same two Grafana dashboards: an **Overview** dashboard for platform configuration and inventory, and a **Health & Monitoring** dashboard for real-time component health, service accessibility, job status, latency, and resource consumption.
+This repository provides two deployment paths for monitoring Ansible Automation Platform on OpenShift — **User-Workload Monitoring** (platform Prometheus + Thanos Querier) and **Cluster Observability Operator** (dedicated COO Prometheus). Both deliver the same Grafana dashboards: an **Overview** dashboard for platform configuration and inventory, a **Health & Monitoring** dashboard for real-time component health, service accessibility, job status, latency, and resource consumption, and a **Jobs** dashboard for per-job / per-host drill-down against the Controller PostgreSQL database.
