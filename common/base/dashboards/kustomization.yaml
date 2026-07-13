@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - grafana-aap-overview-dashboard.yaml
   - grafana-aap-health-dashboard.yaml
+  - grafana-aap-jobs-dashboard.yaml

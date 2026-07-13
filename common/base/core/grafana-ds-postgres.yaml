@@ -1,0 +1,36 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: aap-postgres-grafanadatasource
+spec:
+  valuesFrom:
+    - targetPath: "user"
+      valueFrom:
+        secretKeyRef:
+          name: aap-controller-postgres-configuration
+          key: username
+    - targetPath: "secureJsonData.password"
+      valueFrom:
+        secretKeyRef:
+          name: aap-controller-postgres-configuration
+          key: password
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  datasource:
+    access: proxy
+    editable: true
+    isDefault: false
+    jsonData:
+      database: automationcontroller
+      sslmode: disable
+      postgresVersion: 1500
+    name: AAP-PostgreSQL
+    secureJsonData:
+      password: ${password}
+    type: postgres
+    uid: aap-postgres
+    url: aap-postgres-15.aap.svc.cluster.local:5432
+    user: ${username}
+    database: automationcontroller
