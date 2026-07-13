@@ -114,9 +114,11 @@ Every panel includes a tooltip (?) explaining what it monitors and why it matter
 The "which jobs failed and on which hosts" dashboard. Queries the **Controller PostgreSQL** database (not Prometheus) for per-job and per-host drill-down:
 
 - **Job status summary** — Big-number counts of unified jobs by status (`successful`, `failed`, `error`, `canceled`, `running`, `pending`, `waiting`)
-- **Jobs table** — Filter by **Job status** and **Job template**; **Hosts** shows `main_jobhostsummary` row count (`0` means no host drill-down). Click a **Job ID** (or use the Job ID dropdown; default is **— Select a job —**) to load host results
+- **Jobs table** — Narrow with **Organization** and **Project**, then **Job status** / **Job template**; **Hosts** shows `main_jobhostsummary` row count (`0` means no host drill-down). Click a **Job ID** (or use the Job ID dropdown; default is **— Select a job —**) to load host results
 - **Host results** — Per-host summary (ok, changed, failures, unreachable, skipped, processed, failed) for the selected job; click **host_name** to set the **Host** filter
 - **Failed messages** — Task-level failure text from `main_jobevent` (`task` + `failed_message`) for the selected job and host (**Host = All** shows every failed host)
+
+Filter order: Organization → Project → Job status → Job template → Job ID → Host.
 
 Requires the Controller Postgres datasource — see [PostgreSQL datasource setup (Jobs)](#postgresql-datasource-setup-jobs). If Controller uses an external database, see [External Controller database (Jobs)](#external-controller-database-jobs).
 
@@ -720,7 +722,7 @@ grafana-dashboard-aap-jobs                             3s            1m
 - A folder with the name **AAP Dashboards** will be displayed, containing three dashboards:
   - **AAP - Overview** — platform configuration, inventory, and capacity
   - **AAP - Health & Monitoring** — real-time health of all AAP components
-  - **AAP - Jobs** — filter jobs by status/template, select a job, inspect per-host results and failed messages
+  - **AAP - Jobs** — filter by organization/project/status, select a job, inspect per-host results and failed messages
 
 ![](images/08.png)
 
