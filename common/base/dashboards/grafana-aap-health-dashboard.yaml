@@ -2320,7 +2320,7 @@ spec:
                 },
                 "gridPos": {
                     "h": 4,
-                    "w": 5,
+                    "w": 4,
                     "x": 0,
                     "y": 19
                 },
@@ -2405,8 +2405,8 @@ spec:
                 },
                 "gridPos": {
                     "h": 4,
-                    "w": 5,
-                    "x": 5,
+                    "w": 4,
+                    "x": 4,
                     "y": 19
                 },
                 "id": 122,
@@ -2441,9 +2441,10 @@ spec:
             },
             {
                 "datasource": {
-                    "type": "prometheus"
+                    "type": "grafana-postgresql-datasource",
+                    "uid": "aap-postgres"
                 },
-                "description": "Controller-observed PostgreSQL connectivity. Combines scrape health (metrics endpoint reachable) with application-reported database connections. Works with both cluster-internal and external (RDS, VM) PostgreSQL. If DOWN, the controller cannot reach the database. Note: there may be a brief delay (up to 60s) between a PostgreSQL outage and this panel reflecting it due to Prometheus scrape intervals.",
+                "description": "Checks if PostgreSQL is reachable via a direct Grafana probe (SELECT 1 against the AAP-PostgreSQL datasource). Independent of Controller metrics scrape and Gateway, so it continues to report true database reachability when the API or UI is down. Works with both cluster-internal and external (RDS, VM) PostgreSQL. If DOWN, Grafana cannot connect to the database (network, authentication, TLS, or database failure) — Controller and Jobs cannot function without it. For external DB, configure the datasource URL/TLS the same way as the Jobs dashboard.",
                 "fieldConfig": {
                     "defaults": {
                         "color": {
@@ -2452,19 +2453,9 @@ spec:
                         "mappings": [
                             {
                                 "options": {
-                                    "0": {
-                                        "color": "red",
-                                        "index": 0,
-                                        "text": "DOWN"
-                                    }
-                                },
-                                "type": "value"
-                            },
-                            {
-                                "options": {
                                     "1": {
                                         "color": "green",
-                                        "index": 1,
+                                        "index": 0,
                                         "text": "UP"
                                     }
                                 },
@@ -2490,8 +2481,8 @@ spec:
                 },
                 "gridPos": {
                     "h": 4,
-                    "w": 5,
-                    "x": 10,
+                    "w": 4,
+                    "x": 8,
                     "y": 19
                 },
                 "id": 123,
@@ -2512,16 +2503,116 @@ spec:
                 "targets": [
                     {
                         "datasource": {
-                            "type": "prometheus"
+                            "type": "grafana-postgresql-datasource",
+                            "uid": "aap-postgres"
                         },
                         "editorMode": "code",
-                        "expr": "(clamp_max(min(up{job=~\"$service\", namespace=~\"$namespace\"}), 1) * clamp_max(sum(awx_database_connections_total{namespace=~\"$namespace\"}), 1)) or on() vector(0)",
-                        "instant": true,
-                        "legendFormat": "PostgreSQL",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT 1 AS value;",
                         "refId": "A"
                     }
                 ],
                 "title": "PostgreSQL Accessible",
+                "type": "stat"
+            },
+            {
+                "datasource": {
+                    "type": "prometheus"
+                },
+                "description": "Controller-observed PostgreSQL application health based on reported database connections and transaction latency. Shows UP when connections are active and latency is normal, DEGRADED when connections are active but commit latency exceeds 1s or event-insert latency exceeds 2s, and DOWN when no connections are reported. Depends on the Controller metrics scrape via the ServiceMonitor, so it may show DOWN when the API is unreachable even if PostgreSQL Accessible (direct probe) remains UP. Does not probe the database directly — use PostgreSQL Accessible for reachability, and this panel to detect database pressure experienced by Controller.",
+                "fieldConfig": {
+                    "defaults": {
+                        "color": {
+                            "mode": "thresholds"
+                        },
+                        "mappings": [
+                            {
+                                "options": {
+                                    "0": {
+                                        "color": "red",
+                                        "index": 0,
+                                        "text": "DOWN"
+                                    }
+                                },
+                                "type": "value"
+                            },
+                            {
+                                "options": {
+                                    "1": {
+                                        "color": "green",
+                                        "index": 1,
+                                        "text": "UP"
+                                    }
+                                },
+                                "type": "value"
+                            },
+                            {
+                                "options": {
+                                    "2": {
+                                        "color": "orange",
+                                        "index": 2,
+                                        "text": "DEGRADED"
+                                    }
+                                },
+                                "type": "value"
+                            }
+                        ],
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "color": "red",
+                                    "value": null
+                                },
+                                {
+                                    "color": "green",
+                                    "value": 1
+                                },
+                                {
+                                    "color": "orange",
+                                    "value": 2
+                                }
+                            ]
+                        },
+                        "noValue": "DOWN"
+                    },
+                    "overrides": []
+                },
+                "gridPos": {
+                    "h": 4,
+                    "w": 4,
+                    "x": 12,
+                    "y": 19
+                },
+                "id": 170,
+                "options": {
+                    "colorMode": "background",
+                    "graphMode": "none",
+                    "justifyMode": "auto",
+                    "orientation": "auto",
+                    "reduceOptions": {
+                        "calcs": [
+                            "lastNotNull"
+                        ],
+                        "fields": "",
+                        "values": false
+                    },
+                    "textMode": "auto"
+                },
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus"
+                        },
+                        "editorMode": "code",
+                        "expr": "(clamp_max(sum(awx_database_connections_total{namespace=~\"$namespace\"}), 1) * (1 + clamp_max(((avg(task_manager_commit_seconds{namespace=~\"$namespace\"}) > bool 1) or (avg(callback_receiver_events_insert_db_seconds{namespace=~\"$namespace\"}) > bool 2)), 1))) or on() vector(0)",
+                        "instant": true,
+                        "legendFormat": "Health",
+                        "refId": "A"
+                    }
+                ],
+                "title": "PostgreSQL Health",
                 "type": "stat"
             },
             {
@@ -2562,8 +2653,8 @@ spec:
                 },
                 "gridPos": {
                     "h": 4,
-                    "w": 5,
-                    "x": 15,
+                    "w": 4,
+                    "x": 16,
                     "y": 19
                 },
                 "id": 124,
@@ -3423,7 +3514,26 @@ spec:
                         "refId": "D"
                     }
                 ],
-                "thresholds": [],
+                "thresholds": [
+                    {
+                        "colorMode": "warning",
+                        "fill": false,
+                        "line": true,
+                        "lineColor": "orange",
+                        "op": "gt",
+                        "value": 0.5,
+                        "yaxis": "left"
+                    },
+                    {
+                        "colorMode": "critical",
+                        "fill": false,
+                        "line": true,
+                        "lineColor": "red",
+                        "op": "gt",
+                        "value": 1,
+                        "yaxis": "left"
+                    }
+                ],
                 "timeRegions": [],
                 "title": "PostgreSQL Transaction Latency",
                 "tooltip": {
@@ -3472,7 +3582,7 @@ spec:
                 "fillGradient": 0,
                 "gridPos": {
                     "h": 8,
-                    "w": 8,
+                    "w": 6,
                     "x": 16,
                     "y": 39
                 },
@@ -3571,6 +3681,78 @@ spec:
                 "yaxis": {
                     "align": false
                 }
+            },
+            {
+                "datasource": {
+                    "type": "prometheus"
+                },
+                "description": "Total active PostgreSQL connections reported by the Controller metrics endpoint. Red at 0 (no connections), yellow at 1-2 (thin pool), green at 3 or more. A thin or empty pool can indicate Controller-to-database pressure even when PostgreSQL Accessible is still UP. Depends on the Controller metrics scrape, so values may be unavailable when the API is down.",
+                "fieldConfig": {
+                    "defaults": {
+                        "color": {
+                            "mode": "thresholds"
+                        },
+                        "mappings": [],
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "color": "red",
+                                    "value": null
+                                },
+                                {
+                                    "color": "red",
+                                    "value": 0
+                                },
+                                {
+                                    "color": "yellow",
+                                    "value": 1
+                                },
+                                {
+                                    "color": "green",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        "noValue": "N/A"
+                    },
+                    "overrides": []
+                },
+                "gridPos": {
+                    "h": 8,
+                    "w": 2,
+                    "x": 22,
+                    "y": 39
+                },
+                "id": 171,
+                "options": {
+                    "colorMode": "background",
+                    "graphMode": "none",
+                    "justifyMode": "auto",
+                    "orientation": "auto",
+                    "reduceOptions": {
+                        "calcs": [
+                            "lastNotNull"
+                        ],
+                        "fields": "",
+                        "values": false
+                    },
+                    "textMode": "auto"
+                },
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus"
+                        },
+                        "editorMode": "code",
+                        "expr": "sum(awx_database_connections_total{namespace=~\"$namespace\"})",
+                        "instant": true,
+                        "legendFormat": "Connections",
+                        "refId": "A"
+                    }
+                ],
+                "title": "DB Connections",
+                "type": "stat"
             },
             {
                 "collapsed": false,

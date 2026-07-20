@@ -531,7 +531,7 @@ spec:
             "type": "grafana-postgresql-datasource",
             "uid": "aap-postgres"
           },
-          "description": "Recent unified jobs filtered by status and job template. Hosts is the count of main_jobhostsummary rows (0 means no per-host drill-down). Click a Job ID to select it and load host results / failed messages below.",
+          "description": "Recent unified jobs filtered by organization, project, status, and job template. Hosts is the count of main_jobhostsummary rows (0 means no per-host drill-down). Click a Job ID to select it and load host results / failed messages below.",
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -564,7 +564,7 @@ spec:
                     "value": [
                       {
                         "title": "Select job",
-                        "url": "/d/${__dashboard.uid}/${__dashboard}?${job_status:queryparam}&${job_template:queryparam}&var-job_id=${__value.raw}&var-host_name=All"
+                        "url": "/d/${__dashboard.uid}/${__dashboard}?${organization:queryparam}&${project:queryparam}&${job_status:queryparam}&${job_template:queryparam}&var-job_id=${__value.raw}&var-host_name=All"
                       }
                     ]
                   }
@@ -699,7 +699,7 @@ spec:
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "SELECT\n  uj.id AS \"Job ID\",\n  uj.name AS \"Job Name\",\n  ujt.name AS \"Template\",\n  uj.status AS \"Status\",\n  uj.failed AS \"Failed\",\n  uj.launch_type AS \"Launch Type\",\n  COUNT(jhs.id) AS \"Hosts\",\n  uj.started AS \"Started\",\n  uj.finished AS \"Finished\"\nFROM main_unifiedjob uj\nLEFT JOIN main_unifiedjobtemplate ujt\n  ON uj.unified_job_template_id = ujt.id\nLEFT JOIN main_jobhostsummary jhs\n  ON jhs.job_id = uj.id\nWHERE uj.status IN (${job_status:sqlstring})\n  AND (\n    ${job_template} = -1\n    OR uj.unified_job_template_id IN (${job_template})\n  )\nGROUP BY uj.id, uj.name, ujt.name, uj.status, uj.failed, uj.launch_type, uj.started, uj.finished\nORDER BY uj.started DESC NULLS LAST\nLIMIT 200;",
+              "rawSql": "SELECT\n  uj.id AS \"Job ID\",\n  uj.name AS \"Job Name\",\n  COALESCE(o.name, o_ujt.name) AS \"Organization\",\n  pu.name AS \"Project\",\n  ujt.name AS \"Template\",\n  uj.status AS \"Status\",\n  uj.failed AS \"Failed\",\n  uj.launch_type AS \"Launch Type\",\n  COUNT(jhs.id) AS \"Hosts\",\n  uj.started AS \"Started\",\n  uj.finished AS \"Finished\"\nFROM main_unifiedjob uj\nLEFT JOIN main_organization o ON uj.organization_id = o.id\nLEFT JOIN main_unifiedjobtemplate ujt ON uj.unified_job_template_id = ujt.id\nLEFT JOIN main_organization o_ujt ON ujt.organization_id = o_ujt.id\nLEFT JOIN main_jobtemplate jt ON jt.unifiedjobtemplate_ptr_id = ujt.id\nLEFT JOIN main_unifiedjobtemplate pu ON jt.project_id = pu.id\nLEFT JOIN main_jobhostsummary jhs ON jhs.job_id = uj.id\nWHERE uj.status IN (${job_status:sqlstring})\n  AND (\n      ${organization} = -1\n      OR COALESCE(uj.organization_id, ujt.organization_id) IN (${organization})\n    )\n  AND (\n      ${project} = -1\n      OR jt.project_id IN (${project})\n    )\n  AND (\n    ${job_template} = -1\n    OR uj.unified_job_template_id IN (${job_template})\n  )\nGROUP BY uj.id, uj.name, o.name, o_ujt.name, pu.name, ujt.name, uj.status, uj.failed, uj.launch_type, uj.started, uj.finished\nORDER BY uj.started DESC NULLS LAST\nLIMIT 200;",
               "refId": "A"
             }
           ],
@@ -761,7 +761,7 @@ spec:
                     "value": [
                       {
                         "title": "Select host",
-                        "url": "/d/${__dashboard.uid}/${__dashboard}?${job_status:queryparam}&${job_template:queryparam}&var-job_id=${job_id}&var-host_name=${__value.raw}"
+                        "url": "/d/${__dashboard.uid}/${__dashboard}?${organization:queryparam}&${project:queryparam}&${job_status:queryparam}&${job_template:queryparam}&var-job_id=${job_id}&var-host_name=${__value.raw}"
                       }
                     ]
                   }
@@ -1001,7 +1001,7 @@ spec:
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
-              "rawSql": "SELECT\n  host_name,\n  task,\n  event,\n  COALESCE(\n    NULLIF(event_data::jsonb->>'msg', ''),\n    NULLIF(event_data::jsonb#>>'{res,msg}', ''),\n    LEFT(regexp_replace(COALESCE(stdout, ''), E'\\\\x1b\\\\[[0-9;]*m', '', 'g'), 500)\n  ) AS failed_message\nFROM main_jobevent\nWHERE ${job_id} <> 0\n  AND job_id = ${job_id}\n  AND failed = true\n  AND event IN ('runner_on_failed', 'runner_item_on_failed', 'runner_on_unreachable', 'runner_on_async_failed')\n  AND (\n    '${host_name}' = '.*'\n    OR host_name = '${host_name}'\n  )\nORDER BY counter\nLIMIT 200;",
+              "rawSql": "SELECT\n  host_name,\n  task,\n  event,\n  COALESCE(\n    NULLIF(event_data::jsonb->>'msg', ''),\n    NULLIF(event_data::jsonb#>>'{res,msg}', ''),\n    LEFT(regexp_replace(COALESCE(stdout, ''), E'\\\\x1b\\\\[[0-9;]*m', '', 'g'), 500)\n  ) AS failed_message\nFROM main_jobevent\nWHERE ${job_id} <> 0\n  AND job_id = ${job_id}\n  AND failed = true\n  AND event IN ('runner_on_failed', 'runner_item_on_failed', 'runner_on_unreachable', 'runner_on_async_failed')\n  AND '${host_name}' <> '__none__'\n  AND (\n    '${host_name}' = '.*'\n    OR host_name = '${host_name}'\n  )\nORDER BY counter\nLIMIT 200;",
               "refId": "A"
             }
           ],
@@ -1018,6 +1018,56 @@ spec:
       ],
       "templating": {
         "list": [
+          {
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            "datasource": {
+              "type": "grafana-postgresql-datasource",
+              "uid": "aap-postgres"
+            },
+            "definition": "SELECT name AS __text, id::text AS __value\nFROM main_organization\nORDER BY name;",
+            "hide": 0,
+            "includeAll": true,
+            "label": "Organization",
+            "multi": true,
+            "name": "organization",
+            "options": [],
+            "query": "SELECT name AS __text, id::text AS __value\nFROM main_organization\nORDER BY name;",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 1,
+            "type": "query",
+            "allValue": "-1"
+          },
+          {
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            "datasource": {
+              "type": "grafana-postgresql-datasource",
+              "uid": "aap-postgres"
+            },
+            "definition": "SELECT pu.name AS __text, p.unifiedjobtemplate_ptr_id::text AS __value\nFROM main_project p\nJOIN main_unifiedjobtemplate pu ON pu.id = p.unifiedjobtemplate_ptr_id\nWHERE (\n    ${organization} = -1\n    OR pu.organization_id IN (${organization})\n  )\nORDER BY pu.name;",
+            "hide": 0,
+            "includeAll": true,
+            "label": "Project",
+            "multi": true,
+            "name": "project",
+            "options": [],
+            "query": "SELECT pu.name AS __text, p.unifiedjobtemplate_ptr_id::text AS __value\nFROM main_project p\nJOIN main_unifiedjobtemplate pu ON pu.id = p.unifiedjobtemplate_ptr_id\nWHERE (\n    ${organization} = -1\n    OR pu.organization_id IN (${organization})\n  )\nORDER BY pu.name;",
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 1,
+            "type": "query",
+            "allValue": "-1"
+          },
           {
             "allValue": null,
             "current": {
@@ -1076,7 +1126,6 @@ spec:
             "type": "custom"
           },
           {
-            "allValue": "-1",
             "current": {
               "selected": true,
               "text": "All",
@@ -1086,19 +1135,20 @@ spec:
               "type": "grafana-postgresql-datasource",
               "uid": "aap-postgres"
             },
-            "definition": "SELECT name AS __text, id::text AS __value FROM main_unifiedjobtemplate ORDER BY name;",
+            "definition": "SELECT ujt.name AS __text, ujt.id::text AS __value\nFROM main_unifiedjobtemplate ujt\nLEFT JOIN main_jobtemplate jt ON jt.unifiedjobtemplate_ptr_id = ujt.id\nWHERE (\n    ${organization} = -1\n    OR ujt.organization_id IN (${organization})\n  )\n  AND (\n    ${project} = -1\n    OR jt.project_id IN (${project})\n  )\nORDER BY ujt.name;",
             "hide": 0,
             "includeAll": true,
             "label": "Job template",
             "multi": true,
             "name": "job_template",
             "options": [],
-            "query": "SELECT name AS __text, id::text AS __value FROM main_unifiedjobtemplate ORDER BY name;",
-            "refresh": 1,
+            "query": "SELECT ujt.name AS __text, ujt.id::text AS __value\nFROM main_unifiedjobtemplate ujt\nLEFT JOIN main_jobtemplate jt ON jt.unifiedjobtemplate_ptr_id = ujt.id\nWHERE (\n    ${organization} = -1\n    OR ujt.organization_id IN (${organization})\n  )\n  AND (\n    ${project} = -1\n    OR jt.project_id IN (${project})\n  )\nORDER BY ujt.name;",
+            "refresh": 2,
             "regex": "",
             "skipUrlSync": false,
             "sort": 1,
-            "type": "query"
+            "type": "query",
+            "allValue": "-1"
           },
           {
             "current": {
@@ -1110,14 +1160,14 @@ spec:
               "type": "grafana-postgresql-datasource",
               "uid": "aap-postgres"
             },
-            "definition": "SELECT '\u2014 Select a job \u2014' AS __text, '0' AS __value\nUNION ALL\nSELECT * FROM (\n  SELECT\n    uj.id::text || ' \u2014 ' || COALESCE(uj.name, '') || ' (' || COUNT(jhs.id)::text\n      || CASE WHEN COUNT(jhs.id) = 1 THEN ' host)' ELSE ' hosts)' END AS __text,\n    uj.id::text AS __value\n  FROM main_unifiedjob uj\n  LEFT JOIN main_jobhostsummary jhs ON jhs.job_id = uj.id\n  WHERE uj.status IN (${job_status:sqlstring})\n    AND (\n      ${job_template} = -1\n      OR uj.unified_job_template_id IN (${job_template})\n    )\n  GROUP BY uj.id, uj.name, uj.started\n  ORDER BY (COUNT(jhs.id) > 0) DESC, uj.started DESC NULLS LAST\n  LIMIT 200\n) jobs;",
+            "definition": "SELECT '\u2014 Select a job \u2014' AS __text, '0' AS __value\nUNION ALL\nSELECT * FROM (\n  SELECT\n    uj.id::text || ' \u2014 ' || COALESCE(uj.name, '') || ' (' || COUNT(jhs.id)::text\n      || CASE WHEN COUNT(jhs.id) = 1 THEN ' host)' ELSE ' hosts)' END AS __text,\n    uj.id::text AS __value\n  FROM main_unifiedjob uj\n  LEFT JOIN main_unifiedjobtemplate ujt ON uj.unified_job_template_id = ujt.id\n  LEFT JOIN main_jobtemplate jt ON jt.unifiedjobtemplate_ptr_id = ujt.id\n  LEFT JOIN main_jobhostsummary jhs ON jhs.job_id = uj.id\n  WHERE uj.status IN (${job_status:sqlstring})\n    AND (\n      ${organization} = -1\n      OR COALESCE(uj.organization_id, ujt.organization_id) IN (${organization})\n    )\n    AND (\n      ${project} = -1\n      OR jt.project_id IN (${project})\n    )\n    AND (\n      ${job_template} = -1\n      OR uj.unified_job_template_id IN (${job_template})\n    )\n  GROUP BY uj.id, uj.name, uj.started\n  ORDER BY (COUNT(jhs.id) > 0) DESC, uj.started DESC NULLS LAST\n  LIMIT 200\n) jobs;",
             "hide": 0,
             "includeAll": false,
             "label": "Job ID",
             "multi": false,
             "name": "job_id",
             "options": [],
-            "query": "SELECT '\u2014 Select a job \u2014' AS __text, '0' AS __value\nUNION ALL\nSELECT * FROM (\n  SELECT\n    uj.id::text || ' \u2014 ' || COALESCE(uj.name, '') || ' (' || COUNT(jhs.id)::text\n      || CASE WHEN COUNT(jhs.id) = 1 THEN ' host)' ELSE ' hosts)' END AS __text,\n    uj.id::text AS __value\n  FROM main_unifiedjob uj\n  LEFT JOIN main_jobhostsummary jhs ON jhs.job_id = uj.id\n  WHERE uj.status IN (${job_status:sqlstring})\n    AND (\n      ${job_template} = -1\n      OR uj.unified_job_template_id IN (${job_template})\n    )\n  GROUP BY uj.id, uj.name, uj.started\n  ORDER BY (COUNT(jhs.id) > 0) DESC, uj.started DESC NULLS LAST\n  LIMIT 200\n) jobs;",
+            "query": "SELECT '\u2014 Select a job \u2014' AS __text, '0' AS __value\nUNION ALL\nSELECT * FROM (\n  SELECT\n    uj.id::text || ' \u2014 ' || COALESCE(uj.name, '') || ' (' || COUNT(jhs.id)::text\n      || CASE WHEN COUNT(jhs.id) = 1 THEN ' host)' ELSE ' hosts)' END AS __text,\n    uj.id::text AS __value\n  FROM main_unifiedjob uj\n  LEFT JOIN main_unifiedjobtemplate ujt ON uj.unified_job_template_id = ujt.id\n  LEFT JOIN main_jobtemplate jt ON jt.unifiedjobtemplate_ptr_id = ujt.id\n  LEFT JOIN main_jobhostsummary jhs ON jhs.job_id = uj.id\n  WHERE uj.status IN (${job_status:sqlstring})\n    AND (\n      ${organization} = -1\n      OR COALESCE(uj.organization_id, ujt.organization_id) IN (${organization})\n    )\n    AND (\n      ${project} = -1\n      OR jt.project_id IN (${project})\n    )\n    AND (\n      ${job_template} = -1\n      OR uj.unified_job_template_id IN (${job_template})\n    )\n  GROUP BY uj.id, uj.name, uj.started\n  ORDER BY (COUNT(jhs.id) > 0) DESC, uj.started DESC NULLS LAST\n  LIMIT 200\n) jobs;",
             "refresh": 2,
             "regex": "",
             "skipUrlSync": false,
@@ -1135,18 +1185,18 @@ spec:
               "type": "grafana-postgresql-datasource",
               "uid": "aap-postgres"
             },
-            "definition": "SELECT DISTINCT host_name AS __text, host_name AS __value\nFROM main_jobhostsummary\nWHERE job_id = ${job_id}\n  AND host_name IS NOT NULL\n  AND host_name <> ''\nORDER BY host_name;",
+            "definition": "SELECT __text, __value FROM (\n  SELECT '\u2014' AS __text, '__none__' AS __value, 0 AS ord\n  WHERE ${job_id} = 0\n  UNION ALL\n  SELECT DISTINCT host_name AS __text, host_name AS __value, 1 AS ord\n  FROM main_jobhostsummary\n  WHERE ${job_id} <> 0\n    AND job_id = ${job_id}\n    AND host_name IS NOT NULL\n    AND host_name <> ''\n) h\nORDER BY ord, __text;",
             "hide": 0,
             "includeAll": true,
             "label": "Host",
             "multi": false,
             "name": "host_name",
             "options": [],
-            "query": "SELECT DISTINCT host_name AS __text, host_name AS __value\nFROM main_jobhostsummary\nWHERE job_id = ${job_id}\n  AND host_name IS NOT NULL\n  AND host_name <> ''\nORDER BY host_name;",
+            "query": "SELECT __text, __value FROM (\n  SELECT '\u2014' AS __text, '__none__' AS __value, 0 AS ord\n  WHERE ${job_id} = 0\n  UNION ALL\n  SELECT DISTINCT host_name AS __text, host_name AS __value, 1 AS ord\n  FROM main_jobhostsummary\n  WHERE ${job_id} <> 0\n    AND job_id = ${job_id}\n    AND host_name IS NOT NULL\n    AND host_name <> ''\n) h\nORDER BY ord, __text;",
             "refresh": 2,
             "regex": "",
             "skipUrlSync": false,
-            "sort": 1,
+            "sort": 0,
             "type": "query"
           }
         ]
@@ -1159,6 +1209,6 @@ spec:
       "timezone": "browser",
       "title": "AAP - Jobs",
       "uid": "aap-jobs",
-      "version": 5,
+      "version": 6,
       "weekStart": ""
     }

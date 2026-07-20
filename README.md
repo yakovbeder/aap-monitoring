@@ -90,7 +90,7 @@ The "is everything working" dashboard. Monitors real-time health of all AAP comp
 
 - **AAP Instance Components** — Health status for Gateway, Controller (Web + Task), Hub (API, Web, Content, Worker, Redis), EDA (API, Scheduler, Activation Workers, Default Workers, Event Stream), and MCP. Detects stuck rollouts and crashing pods during updates.
 - **Operator Health** — Individual status for each operator: Gateway, Controller, Hub, EDA, Resource, Metrics, and Lightspeed.
-- **Service Accessibility** — UP/DOWN for UI (gateway backend readiness), API (controller metrics endpoint reachability), PostgreSQL (controller-observed connectivity, works with both internal and external DB), Redis Cluster replicas and pod-level health.
+- **Service Accessibility** — UP/DOWN for UI (gateway backend readiness), API (controller metrics endpoint reachability), PostgreSQL Accessible (direct Grafana→Postgres `SELECT 1` probe — independent of Controller metrics and Gateway, works with both internal and external DB), PostgreSQL Health (Controller-observed connections + latency: UP/DEGRADED/DOWN), DB Connections gauge, Redis Cluster replicas and pod-level health.
 - **Jobs Status** — Running, Pending, Failed jobs, Blocked Tasks, and Consumed Capacity. Includes time-series breakdown with deduplicated metrics.
 - **Latency** — Gateway/API processing time, PostgreSQL transaction latency, and Task Manager execution time.
 - **Resource Health** — Peak CPU and Memory usage as % of configured limits with green/yellow/red thresholds, total namespace resource consumption, and top 5 consumers shown as instant bar gauges.
@@ -107,6 +107,16 @@ The "is everything working" dashboard. Monitors real-time health of all AAP comp
 
 Optional components (EDA, MCP, Hub Redis, Lightspeed, Metrics) show a neutral gray **NOT INSTALLED** when not deployed, instead of a red alarm.
 
+**PostgreSQL Health states:**
+
+| State | Color | Meaning |
+|-------|-------|---------|
+| UP | Green | Active DB connections, normal transaction latency |
+| DEGRADED | Orange | Active connections but high latency (commit > 1s or event insert > 2s) |
+| DOWN | Red | No connections reported or metrics scrape unavailable |
+
+**PostgreSQL Accessible** uses a direct Grafana→Postgres `SELECT 1` probe (independent of Controller metrics and Gateway). **PostgreSQL Health** uses Controller-observed metrics — when API scrape is down, Health may show DOWN while Accessible remains UP. Trust Accessible for database reachability.
+
 Every panel includes a tooltip (?) explaining what it monitors and why it matters.
 
 ### AAP - Jobs
@@ -114,9 +124,11 @@ Every panel includes a tooltip (?) explaining what it monitors and why it matter
 The "which jobs failed and on which hosts" dashboard. Queries the **Controller PostgreSQL** database (not Prometheus) for per-job and per-host drill-down:
 
 - **Job status summary** — Big-number counts of unified jobs by status (`successful`, `failed`, `error`, `canceled`, `running`, `pending`, `waiting`)
-- **Jobs table** — Filter by **Job status** and **Job template**; **Hosts** shows `main_jobhostsummary` row count (`0` means no host drill-down). Click a **Job ID** (or use the Job ID dropdown; default is **— Select a job —**) to load host results
+- **Jobs table** — Narrow with **Organization** and **Project**, then **Job status** / **Job template**; **Hosts** shows `main_jobhostsummary` row count (`0` means no host drill-down). Click a **Job ID** (or use the Job ID dropdown; default is **— Select a job —**) to load host results
 - **Host results** — Per-host summary (ok, changed, failures, unreachable, skipped, processed, failed) for the selected job; click **host_name** to set the **Host** filter
 - **Failed messages** — Task-level failure text from `main_jobevent` (`task` + `failed_message`) for the selected job and host (**Host = All** shows every failed host)
+
+Filter order: Organization → Project → Job status → Job template → Job ID → Host.
 
 Requires the Controller Postgres datasource — see [PostgreSQL datasource setup (Jobs)](#postgresql-datasource-setup-jobs). If Controller uses an external database, see [External Controller database (Jobs)](#external-controller-database-jobs).
 
@@ -531,7 +543,7 @@ grafana-ds                           119s          3d23h
 
 #### **PostgreSQL datasource setup (Jobs)**
 
-Required only for the **AAP - Jobs** dashboard (Overview and Health use Prometheus and do not need this).
+Required for the **AAP - Jobs** dashboard and the **PostgreSQL Accessible** panel on the Health dashboard. Jobs uses SQL queries against the Controller database; Health uses a lightweight `SELECT 1` probe for direct reachability (independent of Controller metrics scrape and Gateway).
 
 The Jobs dashboard uses Grafana datasource **AAP-PostgreSQL** (`uid: aap-postgres`), defined in `common/base/core/grafana-ds-postgres.yaml`. The Kustomize grafana-instance overlays deploy it with the Grafana instance.
 
@@ -564,7 +576,7 @@ If Controller uses an external PostgreSQL (not the in-cluster `aap-postgres-15` 
 
 Applies only when Ansible Automation Platform Controller stores its data in an **external** PostgreSQL (RDS, Azure Database, VM, etc.). Skip this section if you use the default in-cluster Controller Postgres.
 
-Overview and Health dashboards are unaffected; only **AAP - Jobs** talks to the Controller DB directly.
+The Overview dashboard is unaffected. The **Health** dashboard **PostgreSQL Accessible** panel also uses this datasource (direct `SELECT 1` probe), so it will reflect external DB reachability from Grafana. The **PostgreSQL Health** panel (Controller-observed connections + latency) continues to use Prometheus and is unaffected by datasource URL changes. **AAP - Jobs** talks to the Controller DB directly for job/host drill-down.
 
 1. **Credentials** — Keep (or recreate) a secret named `aap-controller-postgres-configuration` in `aap-monitoring` with at least:
 
@@ -720,7 +732,7 @@ grafana-dashboard-aap-jobs                             3s            1m
 - A folder with the name **AAP Dashboards** will be displayed, containing three dashboards:
   - **AAP - Overview** — platform configuration, inventory, and capacity
   - **AAP - Health & Monitoring** — real-time health of all AAP components
-  - **AAP - Jobs** — filter jobs by status/template, select a job, inspect per-host results and failed messages
+  - **AAP - Jobs** — filter by organization/project/status, select a job, inspect per-host results and failed messages
 
 ![](images/08.png)
 
