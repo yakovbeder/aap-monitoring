@@ -118,7 +118,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "awx_instance_info{job=~\"$service\"}",
+                    "expr": "awx_instance_info{job=~\"$service\",instance=~\"$instance\"}",
                     "format": "table",
                     "instant": true,
                     "refId": "A"
@@ -187,7 +187,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "awx_instance_consumed_capacity{job=~\"$service\"} / clamp_min(awx_instance_capacity{job=~\"$service\"}, 1) * 100",
+                    "expr": "awx_instance_consumed_capacity{job=~\"$service\",instance=~\"$instance\"} / clamp_min(awx_instance_capacity{job=~\"$service\",instance=~\"$instance\"}, 1) * 100",
                     "instant": false,
                     "legendFormat": "{{hostname}}",
                     "range": true,
@@ -256,7 +256,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "awx_instance_remaining_capacity{job=~\"$service\"}",
+                    "expr": "awx_instance_remaining_capacity{job=~\"$service\",instance=~\"$instance\"}",
                     "instant": false,
                     "legendFormat": "{{hostname}}",
                     "range": true,
@@ -343,7 +343,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_running_jobs_total{job=~\"$service\"})",
+                    "expr": "max(awx_running_jobs_total{job=~\"$service\",instance=~\"$instance\"})",
                     "instant": false,
                     "legendFormat": "Running",
                     "range": true,
@@ -413,7 +413,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_pending_jobs_total{job=~\"$service\"})",
+                    "expr": "max(awx_pending_jobs_total{job=~\"$service\",instance=~\"$instance\"})",
                     "instant": false,
                     "legendFormat": "Pending",
                     "range": true,
@@ -476,7 +476,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_status_total{job=~\"$service\",status=\"failed\"}) + max(awx_status_total{job=~\"$service\",status=\"error\"})",
+                    "expr": "max(awx_status_total{job=~\"$service\",instance=~\"$instance\",status=\"failed\"}) + max(awx_status_total{job=~\"$service\",instance=~\"$instance\",status=\"error\"})",
                     "instant": false,
                     "legendFormat": "Failed",
                     "range": true,
@@ -558,7 +558,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(task_manager_tasks_blocked{job=~\"$service\"})",
+                    "expr": "max(task_manager_tasks_blocked{job=~\"$service\",instance=~\"$instance\"})",
                     "instant": false,
                     "legendFormat": "Blocked",
                     "range": true,
@@ -629,7 +629,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_instance_consumed_capacity{job=~\"$service\"}) / clamp_min(max(awx_instance_capacity{job=~\"$service\"}), 1) * 100",
+                    "expr": "max(awx_instance_consumed_capacity{job=~\"$service\",instance=~\"$instance\"}) / clamp_min(max(awx_instance_capacity{job=~\"$service\",instance=~\"$instance\"}), 1) * 100",
                     "instant": false,
                     "legendFormat": "Consumed %",
                     "range": true,
@@ -701,7 +701,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_status_total{job=~\"$service\",status=\"running\"})",
+                    "expr": "max(awx_status_total{job=~\"$service\",instance=~\"$instance\",status=\"running\"})",
                     "legendFormat": "Running",
                     "range": true,
                     "refId": "A"
@@ -712,7 +712,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_status_total{job=~\"$service\",status=\"successful\"})",
+                    "expr": "max(awx_status_total{job=~\"$service\",instance=~\"$instance\",status=\"successful\"})",
                     "legendFormat": "Successful",
                     "range": true,
                     "refId": "B"
@@ -723,7 +723,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_status_total{job=~\"$service\",status=\"failed\"})",
+                    "expr": "max(awx_status_total{job=~\"$service\",instance=~\"$instance\",status=\"failed\"})",
                     "legendFormat": "Failed",
                     "range": true,
                     "refId": "C"
@@ -734,7 +734,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_status_total{job=~\"$service\",status=\"error\"})",
+                    "expr": "max(awx_status_total{job=~\"$service\",instance=~\"$instance\",status=\"error\"})",
                     "legendFormat": "Error",
                     "range": true,
                     "refId": "D"
@@ -745,7 +745,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_status_total{job=~\"$service\",status=\"canceled\"})",
+                    "expr": "max(awx_status_total{job=~\"$service\",instance=~\"$instance\",status=\"canceled\"})",
                     "legendFormat": "Canceled",
                     "range": true,
                     "refId": "E"
@@ -756,7 +756,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_status_total{job=~\"$service\",status=\"pending\"})",
+                    "expr": "max(awx_status_total{job=~\"$service\",instance=~\"$instance\",status=\"pending\"})",
                     "legendFormat": "Pending",
                     "range": true,
                     "refId": "F"
@@ -767,7 +767,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(awx_status_total{job=~\"$service\",status=\"waiting\"})",
+                    "expr": "max(awx_status_total{job=~\"$service\",instance=~\"$instance\",status=\"waiting\"})",
                     "legendFormat": "Waiting",
                     "range": true,
                     "refId": "G"
@@ -778,7 +778,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "max(task_manager_tasks_blocked{job=~\"$service\"})",
+                    "expr": "max(task_manager_tasks_blocked{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Blocked",
                     "range": true,
                     "refId": "H"
@@ -886,7 +886,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(task_manager_get_tasks_seconds{job=~\"$service\"})",
+                    "expr": "avg(task_manager_get_tasks_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Loading Tasks",
                     "range": true,
                     "refId": "A"
@@ -897,7 +897,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(task_manager_start_task_seconds{job=~\"$service\"})",
+                    "expr": "avg(task_manager_start_task_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Starting Tasks",
                     "range": true,
                     "refId": "B"
@@ -908,7 +908,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(callback_receiver_event_processing_avg_seconds{job=~\"$service\"})",
+                    "expr": "avg(callback_receiver_event_processing_avg_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Event Processing Avg",
                     "range": true,
                     "refId": "C"
@@ -999,7 +999,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(task_manager_commit_seconds{job=~\"$service\"})",
+                    "expr": "avg(task_manager_commit_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "DB Transactions",
                     "range": true,
                     "refId": "A"
@@ -1010,7 +1010,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(dependency_manager_get_tasks_seconds{job=~\"$service\"})",
+                    "expr": "avg(dependency_manager_get_tasks_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Loading Pending Tasks",
                     "range": true,
                     "refId": "B"
@@ -1021,7 +1021,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(workflow_manager_get_tasks_seconds{job=~\"$service\"})",
+                    "expr": "avg(workflow_manager_get_tasks_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Loading Workflow Tasks",
                     "range": true,
                     "refId": "C"
@@ -1032,7 +1032,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(callback_receiver_events_insert_db_seconds{job=~\"$service\"})",
+                    "expr": "avg(callback_receiver_events_insert_db_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Saving Events to DB",
                     "range": true,
                     "refId": "D"
@@ -1142,7 +1142,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(task_manager_get_tasks_seconds{job=~\"$service\"})",
+                    "expr": "avg(task_manager_get_tasks_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Loading Tasks",
                     "range": true,
                     "refId": "A"
@@ -1153,7 +1153,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(task_manager_start_task_seconds{job=~\"$service\"})",
+                    "expr": "avg(task_manager_start_task_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Starting Tasks",
                     "range": true,
                     "refId": "B"
@@ -1164,7 +1164,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(task_manager_process_running_tasks_seconds{job=~\"$service\"})",
+                    "expr": "avg(task_manager_process_running_tasks_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Processing Running",
                     "range": true,
                     "refId": "C"
@@ -1175,7 +1175,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(task_manager_process_pending_tasks_seconds{job=~\"$service\"})",
+                    "expr": "avg(task_manager_process_pending_tasks_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Processing Pending",
                     "range": true,
                     "refId": "D"
@@ -1276,7 +1276,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "sum(awx_database_connections_total{job=~\"$service\"})",
+                    "expr": "sum(awx_database_connections_total{job=~\"$service\",instance=~\"$instance\"})",
                     "instant": true,
                     "legendFormat": "Connections",
                     "refId": "A"
@@ -1353,7 +1353,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "sum(callback_receiver_events_queue_size_redis{job=~\"$service\"})",
+                    "expr": "sum(callback_receiver_events_queue_size_redis{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Redis Queue Size",
                     "range": true,
                     "refId": "A"
@@ -1364,7 +1364,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "sum(callback_receiver_events_in_memory{job=~\"$service\"})",
+                    "expr": "sum(callback_receiver_events_in_memory{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Events In Memory",
                     "range": true,
                     "refId": "B"
@@ -1375,7 +1375,7 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(callback_receiver_event_processing_avg_seconds{job=~\"$service\"})",
+                    "expr": "avg(callback_receiver_event_processing_avg_seconds{job=~\"$service\",instance=~\"$instance\"})",
                     "legendFormat": "Avg Processing Time (s)",
                     "range": true,
                     "refId": "C"
@@ -1465,7 +1465,7 @@
                     "type": "prometheus",
                     "uid": "${datasource}"
                 },
-                "definition": "label_values(awx_instance_info{job=~\"$service\"}, instance)",
+                "definition": "label_values(awx_instance_info{job=~\"$service\",instance=~\"$instance\"}, instance)",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Instance",
@@ -1473,7 +1473,7 @@
                 "name": "instance",
                 "options": [],
                 "query": {
-                    "query": "label_values(awx_instance_info{job=~\"$service\"}, instance)",
+                    "query": "label_values(awx_instance_info{job=~\"$service\",instance=~\"$instance\"}, instance)",
                     "refId": "StandardVariableQuery"
                 },
                 "refresh": 1,
