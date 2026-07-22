@@ -101,14 +101,11 @@ jobs:
           import json
           from pathlib import Path
 
-          standalone_files = [
-              Path("common/base/dashboards/grafana-aap-health-containerized-dashboard.json"),
-          ]
+          standalone_files = sorted(Path("common/base/dashboards").glob("*.json"))
+          if not standalone_files:
+              raise SystemExit("No standalone dashboard JSON files found")
 
           for path in standalone_files:
-              if not path.exists():
-                  raise SystemExit(f"{path}: file not found")
-
               with path.open() as handle:
                   data = json.load(handle)
 

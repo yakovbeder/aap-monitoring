@@ -79,7 +79,19 @@
 
 ## **Dashboards**
 
-This repository provides three complementary Grafana dashboards:
+This repository provides complementary Grafana dashboards. Each dashboard is available as:
+
+- A **GrafanaDashboard CR** (`.yaml`) for OpenShift / Grafana Operator deployment via Kustomize
+- A **standalone JSON** (`.json`) for direct import into any Grafana instance (**Dashboards → Import → Upload JSON file**)
+
+| Dashboard | CR (OpenShift) | Standalone JSON |
+|-----------|----------------|-----------------|
+| Overview | `grafana-aap-overview-dashboard.yaml` | `grafana-aap-overview-dashboard.json` |
+| Health & Monitoring | `grafana-aap-health-dashboard.yaml` | `grafana-aap-health-dashboard.json` |
+| Health & Monitoring (Containerized) | — | `grafana-aap-health-containerized-dashboard.json` |
+| Jobs | `grafana-aap-jobs-dashboard.yaml` | `grafana-aap-jobs-dashboard.json` |
+
+Files live under [`common/base/dashboards/`](common/base/dashboards/).
 
 ### AAP - Overview
 
@@ -134,7 +146,7 @@ A variant of the Health dashboard designed for **containerized AAP 2.5 on RHEL**
 - **DB Connections** — Active PostgreSQL connections from the Controller metrics endpoint.
 - **Event Processing** — Redis queue depth, in-memory events, and average event processing time.
 
-This is a **standalone Grafana JSON file** (not a GrafanaDashboard CR). Import it directly into any Grafana instance connected to a Prometheus server scraping the AAP metrics endpoint.
+This dashboard is **standalone JSON only** (no GrafanaDashboard CR). Import it into any Grafana instance connected to a Prometheus server scraping the AAP metrics endpoint.
 
 See [Containerized Deployment (RHEL)](#containerized-deployment-rhel) for setup instructions.
 
@@ -158,7 +170,7 @@ aap-monitoring/
 ├── common/base/
 │   ├── auth/              # Service account token secret
 │   ├── core/              # Grafana instance, datasources (Prometheus + Postgres), session secret, certs, folder
-│   ├── dashboards/        # AAP Grafana dashboards (Overview + Health + Jobs)
+│   ├── dashboards/        # AAP Grafana dashboards (CR YAML + standalone JSON)
 │   ├── rbac/              # Namespace, ClusterRoles, RoleBindings
 │   ├── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
 │   └── coo/               # MonitoringStack, KSM ServiceMonitor, cAdvisor ScrapeConfig

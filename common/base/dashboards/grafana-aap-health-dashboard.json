@@ -1,0 +1,4383 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "grafana"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "limit": 100,
+                "name": "Annotations & Alerts",
+                "showIn": 0,
+                "target": {
+                    "limit": 100,
+                    "matchAny": false,
+                    "tags": [],
+                    "type": "dashboard"
+                },
+                "type": "dashboard"
+            }
+        ]
+    },
+    "description": "Comprehensive health and monitoring dashboard for Ansible Automation Platform. Covers component readiness, service accessibility, job status, latency, and resource usage.",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+        {
+            "collapsed": false,
+            "datasource": {
+                "type": "prometheus"
+            },
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 100,
+            "panels": [],
+            "title": "AAP Instance Components",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "The platform gateway is the single entry point for all AAP traffic (UI, API, SSO). If this is down, the entire platform is unreachable.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 0,
+                "y": 1
+            },
+            "id": 101,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-gateway\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-gateway\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Gateway",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "The controller web process serves the Controller API and UI. It handles user requests, project syncs, and inventory updates.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 5,
+                "y": 1
+            },
+            "id": 102,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-web\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-controller-web\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Controller Web",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "The controller task process executes automation jobs (playbooks), handles callback events, and manages the job queue. If this is down, no jobs can run.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 10,
+                "y": 1
+            },
+            "id": 103,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-controller-task\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-controller-task\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Controller Task",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Automation Hub API serves content collections, execution environments, and container images. Required for content management.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 15,
+                "y": 1
+            },
+            "id": 104,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-api\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-api\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Hub API",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Automation Hub web server serves the Hub UI for browsing and managing collections and execution environments.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 20,
+                "y": 1
+            },
+            "id": 105,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-web\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-web\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Hub Web",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Automation Hub content service delivers collection artifacts and execution environment images to clients (ansible-galaxy, podman/docker pull).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 0,
+                "y": 5
+            },
+            "id": 106,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-content\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-content\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Hub Content",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Event-Driven Ansible API server handles rulebook activations, projects, and decision environments management. Shows NOT INSTALLED if this component is not deployed.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "match": "null",
+                                "result": {
+                                    "color": "#B0BEC5",
+                                    "index": 3,
+                                    "text": "NOT INSTALLED"
+                                }
+                            },
+                            "type": "special"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "NOT INSTALLED"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 5,
+                "y": 5
+            },
+            "id": 108,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-api\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-api\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "EDA API",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "EDA scheduler manages the lifecycle and scheduling of rulebook activations. Shows NOT INSTALLED if this component is not deployed.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "match": "null",
+                                "result": {
+                                    "color": "#B0BEC5",
+                                    "index": 3,
+                                    "text": "NOT INSTALLED"
+                                }
+                            },
+                            "type": "special"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "NOT INSTALLED"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 10,
+                "y": 5
+            },
+            "id": 109,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-scheduler\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "EDA Scheduler",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "EDA activation workers execute active rulebook activations, listening for events and triggering actions. Shows NOT INSTALLED if this component is not deployed.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "match": "null",
+                                "result": {
+                                    "color": "#B0BEC5",
+                                    "index": 3,
+                                    "text": "NOT INSTALLED"
+                                }
+                            },
+                            "type": "special"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "NOT INSTALLED"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 5,
+                "x": 15,
+                "y": 5
+            },
+            "id": 110,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-activation-worker\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "EDA Activation Workers",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "EDA default workers process background tasks for Event-Driven Ansible (project syncs, cleanup). Shows NOT INSTALLED if this component is not deployed.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "match": "null",
+                                "result": {
+                                    "color": "#B0BEC5",
+                                    "index": 3,
+                                    "text": "NOT INSTALLED"
+                                }
+                            },
+                            "type": "special"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "NOT INSTALLED"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 20,
+                "y": 5
+            },
+            "id": 115,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-default-worker\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "EDA Default Workers",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Automation Hub background worker processes content syncing, container image builds, and collection imports.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 0,
+                "y": 9
+            },
+            "id": 116,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-worker\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Hub Worker",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Redis cache for Automation Hub, used for task queuing and content caching. Separate from the main AAP Redis cluster. Shows NOT INSTALLED if this component is not deployed.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "match": "null",
+                                "result": {
+                                    "color": "#B0BEC5",
+                                    "index": 3,
+                                    "text": "NOT INSTALLED"
+                                }
+                            },
+                            "type": "special"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "NOT INSTALLED"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 6,
+                "y": 9
+            },
+            "id": 117,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-hub-redis\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Hub Redis",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "EDA event stream service handles real-time event routing from sources to rulebook activations. Shows NOT INSTALLED if this component is not deployed.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "match": "null",
+                                "result": {
+                                    "color": "#B0BEC5",
+                                    "index": 3,
+                                    "text": "NOT INSTALLED"
+                                }
+                            },
+                            "type": "special"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "NOT INSTALLED"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 12,
+                "y": 9
+            },
+            "id": 113,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-eda-event-stream\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "EDA Event Stream",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Model Context Protocol service provides AI-assisted automation capabilities for AAP. Shows NOT INSTALLED if this component is not deployed.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "match": "null",
+                                "result": {
+                                    "color": "#B0BEC5",
+                                    "index": 3,
+                                    "text": "NOT INSTALLED"
+                                }
+                            },
+                            "type": "special"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "NOT INSTALLED"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 18,
+                "y": 9
+            },
+            "id": 114,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-mcp\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\".*-mcp\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-mcp\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$namespace\", deployment=~\".*-mcp\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "MCP",
+            "type": "stat"
+        },
+        {
+            "collapsed": false,
+            "datasource": {
+                "type": "prometheus"
+            },
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 13
+            },
+            "id": 111,
+            "panels": [],
+            "title": "Operator Health",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Manages the AAP Gateway component lifecycle (install, upgrade, reconcile). The gateway is the single entry point for all platform traffic.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 0,
+                "y": 14
+            },
+            "id": 112,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\".*-gateway-operator-.*\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Gateway",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Manages the Automation Controller lifecycle (controller-web, controller-task deployments). If this operator is down, controller cannot be upgraded or reconciled.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 4,
+                "y": 14
+            },
+            "id": 200,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"automation-controller-operator-.*\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Controller",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Manages Automation Hub lifecycle (hub-api, hub-web, hub-content, hub-worker deployments). Required for content management operations.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 8,
+                "y": 14
+            },
+            "id": 201,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"automation-hub-operator-.*\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Hub",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Manages Event-Driven Ansible lifecycle (eda-api, eda-scheduler, eda-workers). Required for EDA operations.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 3,
+                "x": 12,
+                "y": 14
+            },
+            "id": 202,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"eda-server-operator-.*\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "EDA",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Manages AAP resources through Kubernetes custom resources, including jobs, templates, projects, inventories, credentials, and workflows.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 3,
+                "x": 15,
+                "y": 14
+            },
+            "id": 203,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"resource-operator-.*\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Resource",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Manages Ansible Lightspeed (AI assistant) lifecycle. Not critical for core AAP operations. Shows NOT INSTALLED if this component is not deployed.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "match": "null",
+                                "result": {
+                                    "color": "#B0BEC5",
+                                    "index": 3,
+                                    "text": "NOT INSTALLED"
+                                }
+                            },
+                            "type": "special"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "NOT INSTALLED"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 3,
+                "x": 21,
+                "y": 14
+            },
+            "id": 204,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"ansible-lightspeed-operator-.*\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Lightspeed",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Manages the AAP metrics collection and reporting service lifecycle. Shows NOT INSTALLED if this component is not deployed.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "CRITICAL"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "yellow",
+                                    "index": 1,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "green",
+                                    "index": 2,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "match": "null",
+                                "result": {
+                                    "color": "#B0BEC5",
+                                    "index": 3,
+                                    "text": "NOT INSTALLED"
+                                }
+                            },
+                            "type": "special"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "NOT INSTALLED"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 3,
+                "x": 18,
+                "y": 14
+            },
+            "id": 205,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"}) > bool 0) + ((sum(kube_deployment_status_replicas_unavailable{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"}) == bool 0) * (sum(kube_deployment_status_replicas_available{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"}) == bool sum(kube_deployment_spec_replicas{namespace=~\"$operator_namespace\", deployment=~\"automationmetricsservice-operator-.*\"})))",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Metrics",
+            "type": "stat"
+        },
+        {
+            "collapsed": false,
+            "datasource": {
+                "type": "prometheus"
+            },
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 18
+            },
+            "id": 120,
+            "panels": [],
+            "title": "Service Accessibility",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Checks if the AAP web UI is reachable via the platform gateway. The gateway is the single entry point for all AAP traffic. If DOWN, users cannot access any AAP interface.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "DOWN"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "green",
+                                    "index": 1,
+                                    "text": "UP"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    "noValue": "DOWN"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 0,
+                "y": 19
+            },
+            "id": 121,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "clamp_max(sum(kube_deployment_status_replicas_available{namespace=~\"$namespace\", deployment=~\".*-gateway\"}), 1)",
+                    "instant": true,
+                    "legendFormat": "UI",
+                    "refId": "A"
+                }
+            ],
+            "title": "UI Accessible",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Checks if the AAP controller metrics endpoint (/api/controller/v2/metrics/) is responding to Prometheus scrapes via the gateway. Based on the 'up' metric from the ServiceMonitor. Will also show DOWN during PostgreSQL outages since the metrics endpoint depends on database connectivity.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "DOWN"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "green",
+                                    "index": 1,
+                                    "text": "UP"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    "noValue": "DOWN"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 4,
+                "y": 19
+            },
+            "id": 122,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "min(up{job=~\"$service\", namespace=~\"$namespace\"}) or on() vector(0)",
+                    "instant": true,
+                    "legendFormat": "API",
+                    "refId": "A"
+                }
+            ],
+            "title": "API Accessible",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aap-postgres"
+            },
+            "description": "Checks if PostgreSQL is reachable via a direct Grafana probe (SELECT 1 against the AAP-PostgreSQL datasource). Independent of Controller metrics scrape and Gateway, so it continues to report true database reachability when the API or UI is down. Works with both cluster-internal and external (RDS, VM) PostgreSQL. If DOWN, Grafana cannot connect to the database (network, authentication, TLS, or database failure) \u2014 Controller and Jobs cannot function without it. For external DB, configure the datasource URL/TLS the same way as the Jobs dashboard.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "green",
+                                    "index": 0,
+                                    "text": "UP"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    "noValue": "DOWN"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 8,
+                "y": 19
+            },
+            "id": 123,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "grafana-postgresql-datasource",
+                        "uid": "aap-postgres"
+                    },
+                    "editorMode": "code",
+                    "format": "table",
+                    "rawQuery": true,
+                    "rawSql": "SELECT 1 AS value;",
+                    "refId": "A"
+                }
+            ],
+            "title": "PostgreSQL Accessible",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Controller-observed PostgreSQL application health based on reported database connections and transaction latency. Shows UP when connections are active and latency is normal, DEGRADED when connections are active but commit latency exceeds 1s or event-insert latency exceeds 2s, and DOWN when no connections are reported. Depends on the Controller metrics scrape via the ServiceMonitor, so it may show DOWN when the API is unreachable even if PostgreSQL Accessible (direct probe) remains UP. Does not probe the database directly \u2014 use PostgreSQL Accessible for reachability, and this panel to detect database pressure experienced by Controller.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "DOWN"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "green",
+                                    "index": 1,
+                                    "text": "UP"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "2": {
+                                    "color": "orange",
+                                    "index": 2,
+                                    "text": "DEGRADED"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 1
+                            },
+                            {
+                                "color": "orange",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "noValue": "DOWN"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 12,
+                "y": 19
+            },
+            "id": 170,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "(clamp_max(sum(awx_database_connections_total{namespace=~\"$namespace\"}), 1) * (1 + clamp_max(((avg(task_manager_commit_seconds{namespace=~\"$namespace\"}) > bool 1) or (avg(callback_receiver_events_insert_db_seconds{namespace=~\"$namespace\"}) > bool 2)), 1))) or on() vector(0)",
+                    "instant": true,
+                    "legendFormat": "Health",
+                    "refId": "A"
+                }
+            ],
+            "title": "PostgreSQL Health",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Number of ready Redis cluster replicas. Redis is used for caching, job event queuing, and inter-process communication. A healthy cluster has 6 replicas (3 masters + 3 replicas).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 0
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 3
+                            },
+                            {
+                                "color": "green",
+                                "value": 6
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 16,
+                "y": 19
+            },
+            "id": 124,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(kube_statefulset_status_replicas_ready{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"})",
+                    "instant": true,
+                    "legendFormat": "Ready Replicas",
+                    "refId": "A"
+                }
+            ],
+            "title": "Redis Cluster Replicas",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Redis cluster pod-level health based on StatefulSet replica readiness. Shows HEALTHY when all desired replicas are ready, UNHEALTHY when some or all replicas are down. Does not detect cluster-level issues (e.g., cluster_state:fail, unassigned hash slots) where pods are running but Redis is non-functional. For functional Redis health monitoring, a dedicated Redis probe is recommended.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "red",
+                                    "index": 0,
+                                    "text": "UNHEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        },
+                        {
+                            "options": {
+                                "1": {
+                                    "color": "green",
+                                    "index": 1,
+                                    "text": "HEALTHY"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    "noValue": "UNKNOWN"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 20,
+                "y": 19
+            },
+            "id": 125,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "clamp_max(floor(sum(kube_statefulset_status_replicas_ready{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"}) / clamp_min(sum(kube_statefulset_replicas{namespace=~\"$namespace\", statefulset=~\".*-redis.*\"}), 1)), 1) or on() vector(0)",
+                    "instant": true,
+                    "legendFormat": "Health",
+                    "refId": "A"
+                }
+            ],
+            "title": "Redis Cluster Health",
+            "type": "stat"
+        },
+        {
+            "collapsed": false,
+            "datasource": {
+                "type": "prometheus"
+            },
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 24
+            },
+            "id": 130,
+            "panels": [],
+            "title": "Jobs Status",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Number of automation jobs currently executing across all controller instances.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 10
+                            },
+                            {
+                                "color": "red",
+                                "value": 50
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 0,
+                "y": 25
+            },
+            "id": 131,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_running_jobs_total{namespace=~\"$namespace\",job=~\"$service\"})",
+                    "instant": false,
+                    "legendFormat": "Running",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Running Jobs",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Jobs waiting in the queue to be picked up by a controller task worker. High pending count may indicate capacity issues.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "yellow",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 5
+                            },
+                            {
+                                "color": "red",
+                                "value": 20
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 5,
+                "y": 25
+            },
+            "id": 132,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_pending_jobs_total{namespace=~\"$namespace\",job=~\"$service\"})",
+                    "instant": false,
+                    "legendFormat": "Pending",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Pending Jobs",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Total number of jobs that ended in 'failed' or 'error' status. A rising count may indicate playbook issues or infrastructure problems.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "fixed",
+                        "fixedColor": "red"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 10,
+                "y": 25
+            },
+            "id": 133,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"failed\"}) + max(awx_status_total{namespace=~\"$namespace\",job=~\"$service\",status=\"error\"})",
+                    "instant": false,
+                    "legendFormat": "Failed",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Failed Jobs",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Jobs blocked by dependency constraints (e.g., waiting for a parent workflow node to complete). High blocked count may indicate workflow design issues or a failed upstream job holding the pipeline.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "green",
+                                    "index": 0,
+                                    "text": "None"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "red",
+                                "value": 10
+                            }
+                        ]
+                    },
+                    "noValue": "None"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 15,
+                "y": 25
+            },
+            "id": 136,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(task_manager_tasks_blocked{namespace=~\"$namespace\",job=~\"$service\"})",
+                    "instant": false,
+                    "legendFormat": "Blocked",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Blocked Tasks",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Percentage of total controller capacity (fork slots) currently consumed by running jobs. Yellow at 70%, red at 90% -- indicates the controller is running out of execution capacity.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 70
+                            },
+                            {
+                                "color": "red",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 20,
+                "y": 25
+            },
+            "id": 137,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_instance_consumed_capacity{namespace=~\"$namespace\",job=~\"$service\"}) / clamp_min(max(awx_instance_capacity{namespace=~\"$namespace\",job=~\"$service\"}), 1) * 100",
+                    "instant": false,
+                    "legendFormat": "Consumed %",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Consumed Capacity",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Time-series breakdown of all job statuses over time: Running, Successful, Failed, Error, Canceled, Waiting, Pending, and Blocked.",
+            "aliasColors": {
+                "Successful": "#73BF69",
+                "Pending": "#EAB839",
+                "Failed": "#F2495C",
+                "Running": "#5794F2",
+                "Error": "#E87722",
+                "Canceled": "#9B59B6",
+                "Waiting": "#B877D9",
+                "Blocked": "#FF9830"
+            },
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "fill": 1,
+            "fillGradient": 3,
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 30
+            },
+            "hiddenSeries": false,
+            "id": 134,
+            "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": true,
+                "hideEmpty": true,
+                "hideZero": false,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sort": "current",
+                "sortDesc": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 0.5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": true,
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_status_total{job=~\"$service\",status=\"running\"})",
+                    "legendFormat": "Running",
+                    "range": true,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_status_total{job=~\"$service\",status=\"successful\"})",
+                    "legendFormat": "Successful",
+                    "range": true,
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_status_total{job=~\"$service\",status=\"failed\"})",
+                    "legendFormat": "Failed",
+                    "range": true,
+                    "refId": "C"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_status_total{job=~\"$service\",status=\"error\"})",
+                    "legendFormat": "Error",
+                    "range": true,
+                    "refId": "D"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_status_total{job=~\"$service\",status=\"canceled\"})",
+                    "legendFormat": "Canceled",
+                    "range": true,
+                    "refId": "E"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_status_total{job=~\"$service\",status=\"pending\"})",
+                    "legendFormat": "Pending",
+                    "range": true,
+                    "refId": "F"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(awx_status_total{job=~\"$service\",status=\"waiting\"})",
+                    "legendFormat": "Waiting",
+                    "range": true,
+                    "refId": "G"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(task_manager_tasks_blocked{namespace=~\"$namespace\",job=~\"$service\"})",
+                    "legendFormat": "Blocked",
+                    "range": true,
+                    "refId": "H"
+                }
+            ],
+            "thresholds": [],
+            "timeRegions": [],
+            "title": "Job Launched Statistics",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "mode": "time",
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false
+            }
+        },
+        {
+            "collapsed": false,
+            "datasource": {
+                "type": "prometheus"
+            },
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 38
+            },
+            "id": 140,
+            "panels": [],
+            "title": "Latency",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Processing time for the controller task manager and callback receiver. High values indicate the controller is slow to process events or start tasks.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "fill": 2,
+            "fillGradient": 3,
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 39
+            },
+            "hiddenSeries": false,
+            "id": 141,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": true,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 2,
+            "nullPointMode": "null",
+            "percentage": false,
+            "pointradius": 2,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(task_manager_get_tasks_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Loading Tasks",
+                    "range": true,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(task_manager_start_task_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Starting Tasks",
+                    "range": true,
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(callback_receiver_event_processing_avg_seconds{namespace=~\"$namespace\",job=~\"$service\"})",
+                    "legendFormat": "Event Processing Avg",
+                    "range": true,
+                    "refId": "C"
+                }
+            ],
+            "thresholds": [],
+            "timeRegions": [],
+            "title": "Gateway / API Processing Time",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "mode": "time",
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "s",
+                    "logBase": 1,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false
+            }
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Time spent on PostgreSQL transactions: committing task state, loading pending/workflow tasks from DB, and writing callback events. High values indicate database pressure.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "fill": 3,
+            "fillGradient": 5,
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 39
+            },
+            "hiddenSeries": false,
+            "id": 142,
+            "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "nullPointMode": "null",
+            "percentage": false,
+            "pointradius": 0.5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(task_manager_commit_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "DB Transactions",
+                    "range": true,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(dependency_manager_get_tasks_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Loading Pending Tasks",
+                    "range": true,
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(workflow_manager_get_tasks_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Loading Workflow Tasks",
+                    "range": true,
+                    "refId": "C"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(callback_receiver_events_insert_db_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Saving Events to DB",
+                    "range": true,
+                    "refId": "D"
+                }
+            ],
+            "thresholds": [
+                {
+                    "colorMode": "warning",
+                    "fill": false,
+                    "line": true,
+                    "lineColor": "orange",
+                    "op": "gt",
+                    "value": 0.5,
+                    "yaxis": "left"
+                },
+                {
+                    "colorMode": "critical",
+                    "fill": false,
+                    "line": true,
+                    "lineColor": "red",
+                    "op": "gt",
+                    "value": 1,
+                    "yaxis": "left"
+                }
+            ],
+            "timeRegions": [],
+            "title": "PostgreSQL Transaction Latency",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "mode": "time",
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "s",
+                    "logBase": 1,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false
+            }
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Time spent in the task manager processing pipeline: loading, starting, and processing running and pending tasks. High values indicate job scheduling bottlenecks.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "fill": 3,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 16,
+                "y": 39
+            },
+            "hiddenSeries": false,
+            "id": 143,
+            "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "nullPointMode": "null",
+            "percentage": false,
+            "pointradius": 2,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(task_manager_get_tasks_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Loading Tasks",
+                    "range": true,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(task_manager_start_task_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Starting Tasks",
+                    "range": true,
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(task_manager_process_running_tasks_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Processing Running",
+                    "range": true,
+                    "refId": "C"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(task_manager_process_pending_tasks_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Processing Pending",
+                    "range": true,
+                    "refId": "D"
+                }
+            ],
+            "thresholds": [],
+            "timeRegions": [],
+            "title": "Task Manager Execution Time",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "mode": "time",
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "s",
+                    "logBase": 1,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false
+            }
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Total active PostgreSQL connections reported by the Controller metrics endpoint. Red at 0 (no connections), yellow at 1-2 (thin pool), green at 3 or more. A thin or empty pool can indicate Controller-to-database pressure even when PostgreSQL Accessible is still UP. Depends on the Controller metrics scrape, so values may be unavailable when the API is down.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 0
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "green",
+                                "value": 3
+                            }
+                        ]
+                    },
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 2,
+                "x": 22,
+                "y": 39
+            },
+            "id": 171,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(awx_database_connections_total{namespace=~\"$namespace\"})",
+                    "instant": true,
+                    "legendFormat": "Connections",
+                    "refId": "A"
+                }
+            ],
+            "title": "DB Connections",
+            "type": "stat"
+        },
+        {
+            "collapsed": false,
+            "datasource": {
+                "type": "prometheus"
+            },
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 47
+            },
+            "id": 150,
+            "panels": [],
+            "title": "Resource Health",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Highest CPU usage as a percentage of its configured limit across all containers. Green < 70%, Yellow 70-90%, Red > 90%. If red, a container is close to being CPU-throttled.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 70
+                            },
+                            {
+                                "color": "red",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent",
+                    "decimals": 1,
+                    "min": 0,
+                    "max": 100,
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 0,
+                "y": 48
+            },
+            "id": 151,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container!=\"POD\",container!=\"\"}[5m])) by (pod,container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\",resource=\"cpu\"}) by (pod,container) * 100)",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Peak CPU % of Limit",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Highest memory usage as a percentage of its configured limit across all containers. Green < 70%, Yellow 70-90%, Red > 90%. If red, a container risks being OOMKilled.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 70
+                            },
+                            {
+                                "color": "red",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent",
+                    "decimals": 1,
+                    "min": 0,
+                    "max": 100,
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 6,
+                "y": 48
+            },
+            "id": 152,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "max(sum(container_memory_working_set_bytes{namespace=~\"$namespace\",container!=\"POD\",container!=\"\"}) by (pod,container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\",resource=\"memory\"}) by (pod,container) * 100)",
+                    "instant": true,
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Peak Memory % of Limit",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Total CPU cores consumed by all containers in the AAP namespace.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "decimals": 2,
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 12,
+                "y": 48
+            },
+            "id": 155,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container!=\"POD\",pod!=\"\"}[5m]))",
+                    "instant": false,
+                    "legendFormat": "CPU Cores",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Total CPU Cores Used",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Total working set memory consumed by all containers in the AAP namespace.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "decbytes",
+                    "noValue": "N/A"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 18,
+                "y": 48
+            },
+            "id": 156,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(container_memory_working_set_bytes{namespace=~\"$namespace\",container!=\"POD\",pod!=\"\"})",
+                    "instant": false,
+                    "legendFormat": "Memory",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Total Memory Used",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Top 5 pods by CPU usage as percentage of their configured limit. Shows instant values. Helps identify which workload is closest to being CPU-throttled.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "continuous-GrYlRd"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 70
+                            },
+                            {
+                                "color": "red",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent",
+                    "decimals": 1,
+                    "min": 0,
+                    "max": 100
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 53
+            },
+            "id": 153,
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "topk(5, max(sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container!=\"POD\",container!=\"\"}[5m])) by (pod,container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\",resource=\"cpu\"}) by (pod,container) * 100) by (pod))",
+                    "legendFormat": "{{ pod }}",
+                    "range": false,
+                    "refId": "A",
+                    "instant": true
+                }
+            ],
+            "title": "Top 5 CPU Consumers (% of Limit)",
+            "type": "bargauge",
+            "options": {
+                "displayMode": "gradient",
+                "minVizHeight": 10,
+                "minVizWidth": 0,
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showUnfilled": true
+            }
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Top 5 pods by memory usage as percentage of their configured limit. Shows instant values. Helps identify which workload is closest to being OOMKilled.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "continuous-GrYlRd"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 70
+                            },
+                            {
+                                "color": "red",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent",
+                    "decimals": 1,
+                    "min": 0,
+                    "max": 100
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 53
+            },
+            "id": 154,
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "topk(5, max(sum(container_memory_working_set_bytes{namespace=~\"$namespace\",container!=\"POD\",container!=\"\"}) by (pod,container) / sum(kube_pod_container_resource_limits{namespace=~\"$namespace\",resource=\"memory\"}) by (pod,container) * 100) by (pod))",
+                    "legendFormat": "{{ pod }}",
+                    "range": false,
+                    "refId": "A",
+                    "instant": true
+                }
+            ],
+            "title": "Top 5 Memory Consumers (% of Limit)",
+            "type": "bargauge",
+            "options": {
+                "displayMode": "gradient",
+                "minVizHeight": 10,
+                "minVizWidth": 0,
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showUnfilled": true
+            }
+        },
+        {
+            "collapsed": false,
+            "datasource": {
+                "type": "prometheus"
+            },
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 56
+            },
+            "id": 160,
+            "panels": [],
+            "title": "Event Processing",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus"
+            },
+            "description": "Callback receiver metrics: Redis event queue depth (events waiting to be written to DB), events held in memory, and average processing time per event. A growing queue indicates the system cannot keep up with event volume. Shows 'No data' when no jobs are running and the callback receiver is idle.",
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "fill": 2,
+            "fillGradient": 5,
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 57
+            },
+            "hiddenSeries": false,
+            "id": 161,
+            "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": true,
+                "hideEmpty": true,
+                "hideZero": false,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "nullPointMode": "null",
+            "percentage": false,
+            "pointradius": 2,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(callback_receiver_events_queue_size_redis{namespace=~\"$namespace\",job=~\"$service\"})",
+                    "legendFormat": "Redis Queue Size",
+                    "range": true,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(callback_receiver_events_in_memory{namespace=~\"$namespace\",job=~\"$service\"})",
+                    "legendFormat": "Events In Memory",
+                    "range": true,
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "avg(callback_receiver_event_processing_avg_seconds{namespace=~\"$namespace\",job=~\"$service\"})",
+                    "legendFormat": "Avg Processing Time (s)",
+                    "range": true,
+                    "refId": "C"
+                }
+            ],
+            "thresholds": [],
+            "timeRegions": [],
+            "title": "Event Processing (Callback Receiver)",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "mode": "time",
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false
+            }
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 37,
+    "style": "dark",
+    "tags": [
+        "aap",
+        "health",
+        "monitoring"
+    ],
+    "templating": {
+        "list": [
+            {
+                "current": {},
+                "datasource": {
+                    "type": "prometheus"
+                },
+                "definition": "label_values(kube_deployment_status_replicas{deployment=~\".*-gateway|.*-controller-web|.*-controller-task|.*-hub-api|.*-hub-web|.*-hub-content|.*-hub-worker|.*-hub-redis|.*-eda-api|.*-eda-scheduler|.*-eda-activation-worker|.*-eda-default-worker|.*-eda-event-stream|.*-mcp\"},namespace)",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Namespace",
+                "multi": false,
+                "name": "namespace",
+                "options": [],
+                "query": {
+                    "query": "label_values(kube_deployment_status_replicas{deployment=~\".*-gateway|.*-controller-web|.*-controller-task|.*-hub-api|.*-hub-web|.*-hub-content|.*-hub-worker|.*-hub-redis|.*-eda-api|.*-eda-scheduler|.*-eda-activation-worker|.*-eda-default-worker|.*-eda-event-stream|.*-mcp\"},namespace)",
+                    "refId": "StandardVariableQuery"
+                },
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            },
+            {
+                "current": {},
+                "datasource": {
+                    "type": "prometheus"
+                },
+                "definition": "label_values(up{namespace=~\"$namespace\"},service)",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Service",
+                "multi": false,
+                "name": "service",
+                "options": [],
+                "query": {
+                    "query": "label_values(up{namespace=~\"$namespace\"},service)",
+                    "refId": "StandardVariableQuery"
+                },
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            },
+            {
+                "current": {},
+                "datasource": {
+                    "type": "prometheus"
+                },
+                "definition": "label_values(kube_deployment_status_replicas{deployment=~\".*-gateway-operator-.*|automation-controller-operator-.*|automation-hub-operator-.*|eda-server-operator-.*|resource-operator-.*|ansible-lightspeed-operator-.*|automationmetricsservice-operator-.*\"},namespace)",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Operator Namespace",
+                "multi": false,
+                "name": "operator_namespace",
+                "options": [],
+                "query": {
+                    "query": "label_values(kube_deployment_status_replicas{deployment=~\".*-gateway-operator-.*|automation-controller-operator-.*|automation-hub-operator-.*|eda-server-operator-.*|resource-operator-.*|ansible-lightspeed-operator-.*|automationmetricsservice-operator-.*\"},namespace)",
+                    "refId": "StandardVariableQuery"
+                },
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-30m",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "AAP - Health & Monitoring",
+    "uid": "aap-health-monitoring",
+    "version": 1,
+    "weekStart": ""
+}
