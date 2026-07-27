@@ -1032,8 +1032,8 @@
                         "uid": "${datasource}"
                     },
                     "editorMode": "code",
-                    "expr": "avg(callback_receiver_events_insert_db_seconds{job=~\"$service\",instance=~\"$instance\"})",
-                    "legendFormat": "Saving Events to DB",
+                    "expr": "avg(callback_receiver_event_processing_avg_seconds{job=~\"$service\",instance=~\"$instance\"})",
+                    "legendFormat": "Event Processing Avg",
                     "range": true,
                     "refId": "D"
                 }

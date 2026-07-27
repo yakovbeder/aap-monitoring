@@ -2594,7 +2594,7 @@
                         "type": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "(clamp_max(sum(awx_database_connections_total{namespace=~\"$namespace\"}), 1) * (1 + clamp_max(((avg(task_manager_commit_seconds{namespace=~\"$namespace\"}) > bool 1) or (avg(callback_receiver_events_insert_db_seconds{namespace=~\"$namespace\"}) > bool 2)), 1))) or on() vector(0)",
+                    "expr": "(clamp_max(sum(awx_database_connections_total{namespace=~\"$namespace\"}), 1) * (1 + clamp_max(((avg(task_manager_commit_seconds{namespace=~\"$namespace\"}) > bool 1) or (avg(callback_receiver_event_processing_avg_seconds{namespace=~\"$namespace\"}) > bool 2)), 1))) or on() vector(0)",
                     "instant": true,
                     "legendFormat": "Health",
                     "refId": "A"
@@ -3496,8 +3496,8 @@
                         "type": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "avg(callback_receiver_events_insert_db_seconds{namespace=~\"$namespace\"})",
-                    "legendFormat": "Saving Events to DB",
+                    "expr": "avg(callback_receiver_event_processing_avg_seconds{namespace=~\"$namespace\"})",
+                    "legendFormat": "Event Processing Avg",
                     "range": true,
                     "refId": "D"
                 }
