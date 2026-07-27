@@ -32,6 +32,7 @@
 - [Dashboards](#dashboards)
   - [AAP - Overview](#aap---overview)
   - [AAP - Health & Monitoring](#aap---health--monitoring)
+  - [AAP - Health & Monitoring (Containerized)](#aap---health--monitoring-containerized)
   - [AAP - Jobs](#aap---jobs)
 - [Repository Structure](#repository-structure)
 - [Prerequisites](#prerequisites)
@@ -61,6 +62,10 @@
     - [Creating Grafana Dashboards (COO)](#creating-grafana-dashboards-coo)
     - [Viewing the Dashboards (COO)](#viewing-the-dashboards-coo)
     - [Kustomize Deployment (COO)](#kustomize-deployment-coo)
+- [Containerized Deployment (RHEL)](#containerized-deployment-rhel)
+  - [Prerequisites (Containerized)](#prerequisites-containerized)
+  - [Prometheus Setup](#prometheus-setup)
+  - [Grafana Setup and Dashboard Import](#grafana-setup-and-dashboard-import)
 - [Conclusion](#conclusion)
 
 &nbsp;
@@ -74,7 +79,19 @@
 
 ## **Dashboards**
 
-This repository provides three complementary Grafana dashboards:
+This repository provides complementary Grafana dashboards. Each dashboard is available as:
+
+- A **GrafanaDashboard CR** (`.yaml`) for OpenShift / Grafana Operator deployment via Kustomize
+- A **standalone JSON** (`.json`) for direct import into any Grafana instance (**Dashboards → Import → Upload JSON file**)
+
+| Dashboard | CR (OpenShift) | Standalone JSON |
+|-----------|----------------|-----------------|
+| Overview | `grafana-aap-overview-dashboard.yaml` | `grafana-aap-overview-dashboard.json` |
+| Health & Monitoring | `grafana-aap-health-dashboard.yaml` | `grafana-aap-health-dashboard.json` |
+| Health & Monitoring (Containerized) | — | `grafana-aap-health-containerized-dashboard.json` |
+| Jobs | `grafana-aap-jobs-dashboard.yaml` | `grafana-aap-jobs-dashboard.json` |
+
+Files live under [`common/base/dashboards/`](common/base/dashboards/).
 
 ### AAP - Overview
 
@@ -119,6 +136,20 @@ Optional components (EDA, MCP, Hub Redis, Lightspeed, Metrics) show a neutral gr
 
 Every panel includes a tooltip (?) explaining what it monitors and why it matters.
 
+### AAP - Health & Monitoring (Containerized)
+
+A variant of the Health dashboard designed for **containerized AAP 2.5 on RHEL** (podman-based deployment). Uses only `awx_*` and controller metrics available from the `/api/controller/v2/metrics/` endpoint — no Kubernetes, cAdvisor, or kube-state-metrics dependencies.
+
+- **Instance Health** — Controller instance info table (`awx_instance_info`), per-instance capacity gauge, and remaining capacity. Replaces the OpenShift-specific component readiness tiles.
+- **Jobs Status** — Running, Pending, Failed jobs, Blocked Tasks, and Consumed Capacity with time-series breakdown.
+- **Latency** — Gateway/API processing time, PostgreSQL transaction latency, and Task Manager execution time.
+- **DB Connections** — Active PostgreSQL connections from the Controller metrics endpoint.
+- **Event Processing** — Redis queue depth, in-memory events, and average event processing time.
+
+This dashboard is **standalone JSON only** (no GrafanaDashboard CR). Import it into any Grafana instance connected to a Prometheus server scraping the AAP metrics endpoint.
+
+See [Containerized Deployment (RHEL)](#containerized-deployment-rhel) for setup instructions.
+
 ### AAP - Jobs
 
 The "which jobs failed and on which hosts" dashboard. Queries the **Controller PostgreSQL** database (not Prometheus) for per-job and per-host drill-down:
@@ -139,7 +170,7 @@ aap-monitoring/
 ├── common/base/
 │   ├── auth/              # Service account token secret
 │   ├── core/              # Grafana instance, datasources (Prometheus + Postgres), session secret, certs, folder
-│   ├── dashboards/        # AAP Grafana dashboards (Overview + Health + Jobs)
+│   ├── dashboards/        # AAP Grafana dashboards (CR YAML + standalone JSON)
 │   ├── rbac/              # Namespace, ClusterRoles, RoleBindings
 │   ├── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
 │   └── coo/               # MonitoringStack, KSM ServiceMonitor, cAdvisor ScrapeConfig
@@ -1221,6 +1252,93 @@ oc apply -k overlays/coo/dashboards/
 ```
 
 
+## **Containerized Deployment (RHEL)**
+
+This section covers monitoring AAP 2.5 running as a **containerized deployment on RHEL** (podman). Unlike the OpenShift paths above, there is no Kubernetes, so `kube_deployment_*`, `kube_statefulset_*`, and `container_*` metrics are not available. Instead, use the standalone **AAP - Health & Monitoring (Containerized)** dashboard, which relies only on `awx_*` and controller metrics exposed at `/api/controller/v2/metrics/`.
+
+### Prerequisites (Containerized)
+
+- A running AAP 2.5 containerized installation on RHEL
+- Prometheus installed on a host that can reach the AAP Gateway (standalone or containerized)
+- Grafana installed and connected to the Prometheus instance as a datasource
+- An OAuth2 token from the AAP Controller for Prometheus to authenticate
+
+### Prometheus Setup
+
+**1. Create an OAuth2 token in AAP**
+
+Create a personal access token (PAT) for a user with at least `System Auditor` role in the AAP Controller. Go to **Users → <user> → Tokens → Create Token**, select scope `read`, and copy the token value.
+
+Alternatively, use the API:
+
+```bash
+curl -k -X POST https://<gateway_host>/api/controller/v2/tokens/ \
+  -H "Content-Type: application/json" \
+  -u <admin_user>:<password> \
+  -d '{"scope": "read"}'
+```
+
+**2. Configure Prometheus scrape**
+
+Add the following job to your `prometheus.yml`:
+
+```yaml
+scrape_configs:
+  - job_name: 'controller'
+    tls_config:
+      insecure_skip_verify: true    # if using self-signed certs
+    metrics_path: /api/controller/v2/metrics/
+    scrape_interval: 5s
+    scheme: https
+    bearer_token: <token_value>
+    static_configs:
+      - targets:
+          - <gateway_host>
+```
+
+Replace `<token_value>` with the PAT from step 1, and `<gateway_host>` with the hostname or IP of the AAP Gateway. If the Gateway uses a non-default port, include it (e.g., `gateway.example.com:8443`).
+
+**3. Verify metrics**
+
+After restarting Prometheus, verify the target is `UP` in the Prometheus UI under **Status → Targets**. You should see the `controller` job with a green `UP` status.
+
+Test a query in the Prometheus expression browser:
+
+```promql
+awx_instance_info
+```
+
+This should return one time series per controller instance with labels like `hostname`, `version`, and `node_type`.
+
+### Grafana Setup and Dashboard Import
+
+**1. Add the Prometheus datasource in Grafana**
+
+In Grafana, go to **Configuration → Data Sources → Add data source → Prometheus** and enter the Prometheus server URL (e.g., `http://prometheus-host:9090`).
+
+**2. Import the containerized Health dashboard**
+
+The dashboard file is located at:
+
+```
+common/base/dashboards/grafana-aap-health-containerized-dashboard.json
+```
+
+In Grafana, go to **Dashboards → Import → Upload JSON file** and select the file above. When prompted, select the Prometheus datasource you created in step 1.
+
+The dashboard will appear under its default title **AAP - Health & Monitoring (Containerized)**.
+
+**3. Template variables**
+
+The dashboard provides three template variables at the top:
+
+| Variable | Purpose |
+|----------|---------|
+| **Data Source** | Selects which Prometheus datasource to query |
+| **Service** | Filters by the Prometheus `job` label (matches `job_name` from scrape config) |
+| **Instance** | Filters by the Prometheus `instance` label (the `host:port` of the scrape target) |
+
+
 ## **Conclusion**
 
-This repository provides two deployment paths for monitoring Ansible Automation Platform on OpenShift — **User-Workload Monitoring** (platform Prometheus + Thanos Querier) and **Cluster Observability Operator** (dedicated COO Prometheus). Both deliver the same Grafana dashboards: an **Overview** dashboard for platform configuration and inventory, a **Health & Monitoring** dashboard for real-time component health, service accessibility, job status, latency, and resource consumption, and a **Jobs** dashboard for per-job / per-host drill-down against the Controller PostgreSQL database.
+This repository provides monitoring for Ansible Automation Platform across three deployment models: **User-Workload Monitoring** and **Cluster Observability Operator** for OpenShift, and a **Containerized (RHEL)** path for podman-based installations. The OpenShift paths deliver the full Grafana dashboard suite — **Overview**, **Health & Monitoring**, and **Jobs** — covering component health, service accessibility, job status, latency, resource consumption, and per-job / per-host drill-down against the Controller PostgreSQL database. The containerized path provides a standalone **Health & Monitoring (Containerized)** dashboard using only `awx_*` and controller metrics from the AAP metrics endpoint.

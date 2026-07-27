@@ -94,3 +94,26 @@ jobs:
               json.loads(dashboard_json)
               print(f"validated {path}")
           PY
+
+      - name: Validate standalone dashboard JSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          standalone_files = sorted(Path("common/base/dashboards").glob("*.json"))
+          if not standalone_files:
+              raise SystemExit("No standalone dashboard JSON files found")
+
+          for path in standalone_files:
+              with path.open() as handle:
+                  data = json.load(handle)
+
+              if "panels" not in data:
+                  raise SystemExit(f"{path}: missing 'panels' key")
+
+              if "templating" not in data:
+                  raise SystemExit(f"{path}: missing 'templating' key")
+
+              print(f"validated {path}")
+          PY
