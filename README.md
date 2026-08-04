@@ -179,7 +179,7 @@ aap-monitoring/
 │   ├── rbac/              # Namespace, ClusterRoles, RoleBindings
 │   ├── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
 │   └── coo/               # MonitoringStack, KSM ServiceMonitor, cAdvisor ScrapeConfig
-├── docs/                  # Operational guides (e.g. manual containerized panel updates)
+├── docs/                  # Plans and operational notes
 ├── overlays/aap-grafana/  # User-Workload Monitoring path
 │   ├── dashboards/        # Deploys auth + dashboards with namespace override
 │   ├── grafana-instance/  # Deploys core with user role and datasource patches
