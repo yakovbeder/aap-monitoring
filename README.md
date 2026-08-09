@@ -90,6 +90,7 @@ This repository provides complementary Grafana dashboards. Each dashboard is ava
 | Overview | `grafana-aap-overview-dashboard.yaml` | `grafana-aap-overview-dashboard.json` |
 | Health & Monitoring | `grafana-aap-health-dashboard.yaml` | `grafana-aap-health-dashboard.json` |
 | Health & Monitoring (Containerized) | — | `grafana-aap-health-containerized-dashboard.json` |
+| Health & Monitoring (Containerized, Prometheus-only) | — | `grafana-aap-health-containerized-prom-only-dashboard.json` |
 | Jobs | `grafana-aap-jobs-dashboard.yaml` | `grafana-aap-jobs-dashboard.json` |
 
 Files live under [`common/base/dashboards/`](common/base/dashboards/).
@@ -154,6 +155,21 @@ A variant of the Health dashboard designed for **containerized AAP 2.5/2.6 on RH
 This dashboard is **standalone JSON only** (no GrafanaDashboard CR). Import it into any Grafana instance with a Prometheus datasource (metrics scrape) and an Infinity datasource (Gateway status API).
 
 See [Containerized Deployment (RHEL)](#containerized-deployment-rhel) for setup instructions.
+
+### AAP - Health & Monitoring (Containerized, Prometheus-only)
+
+Same panels as the Containerized dashboard above **minus** the Component Status row. Uses **Prometheus only** — no Infinity plugin required.
+
+- **Platform Reachability & Mesh Nodes** — Gateway/API reachability inferred from Prometheus `up`; Controller, Execution, and Hop node counts; registered-node table; capacity by node.
+- **Data Services (Controller-observed)** — PostgreSQL Accessible / Health; Redis Reachable and event queue depth.
+- **Jobs Status** — Running, Pending, Failed, Blocked, Consumed Capacity, time-series breakdown.
+- **Latency** — Controller processing time, PostgreSQL transaction latency, Task Manager execution time.
+- **DB Connections** — Active PostgreSQL connections.
+- **Event Processing** — Redis queue depth, in-memory events, average event processing time.
+
+**Scope:** Controller and registered mesh nodes only. No Gateway/Hub/EDA/Redis status or mode. Use this when the Infinity plugin is not available.
+
+This dashboard is **standalone JSON only**. Import it into any Grafana instance with a Prometheus datasource.
 
 ### AAP - Jobs
 
