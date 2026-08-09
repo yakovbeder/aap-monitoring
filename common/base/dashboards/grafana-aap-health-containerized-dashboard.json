@@ -286,7 +286,10 @@
           "uql": "parse-json\n| project \"status\"=\"services.hub.status\"",
           "root_selector": "",
           "columns": [],
-          "filters": []
+          "filters": [],
+          "json_options": {
+            "root_is_not_array": true
+          }
         }
       ],
       "fieldConfig": {
@@ -390,7 +393,10 @@
           "uql": "parse-json\n| project \"status\"=\"services.eda.status\"",
           "root_selector": "",
           "columns": [],
-          "filters": []
+          "filters": [],
+          "json_options": {
+            "root_is_not_array": true
+          }
         }
       ],
       "fieldConfig": {
