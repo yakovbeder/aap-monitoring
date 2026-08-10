@@ -23,7 +23,7 @@
       }
     ]
   },
-  "description": "Health dashboard for containerized AAP 2.5/2.6 on RHEL. Uses Prometheus metrics from /api/controller/v2/metrics/ plus json_exporter metrics (aap_service_status / aap_redis_info) scraped from /api/gateway/v1/status/. Requires json_exporter on the Gateway VM. See json_exporter/README.md for setup. No Grafana Infinity plugin required.",
+  "description": "Health dashboard for containerized AAP 2.5/2.6 on RHEL. Uses Prometheus metrics from /api/controller/v2/metrics/ plus json_exporter metrics (aap_gateway_status_up / aap_controller_status_up / aap_hub_status_up / aap_eda_status_up / aap_redis_info_up) scraped from /api/gateway/v1/status/. Requires json_exporter on the Gateway VM. See json_exporter/README.md for setup. No Grafana Infinity plugin required.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -66,7 +66,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "aap_service_status{service=\"gateway\"}",
+          "expr": "aap_gateway_status_up",
           "instant": true,
           "legendFormat": "{{status}}",
           "range": false,
@@ -193,7 +193,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "aap_service_status{service=\"controller\"}",
+          "expr": "aap_controller_status_up",
           "instant": true,
           "legendFormat": "{{status}}",
           "range": false,
@@ -320,7 +320,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "aap_service_status{service=\"hub\"}",
+          "expr": "aap_hub_status_up",
           "instant": true,
           "legendFormat": "{{status}}",
           "range": false,
@@ -447,7 +447,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "aap_service_status{service=\"eda\"}",
+          "expr": "aap_eda_status_up",
           "instant": true,
           "legendFormat": "{{status}}",
           "range": false,
@@ -574,7 +574,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "aap_redis_info",
+          "expr": "aap_redis_info_up",
           "instant": true,
           "legendFormat": "{{status}}",
           "range": false,
@@ -701,7 +701,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "aap_redis_info",
+          "expr": "aap_redis_info_up",
           "instant": true,
           "legendFormat": "{{mode}}",
           "range": false,

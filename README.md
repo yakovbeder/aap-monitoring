@@ -162,7 +162,7 @@ See [Containerized Deployment (RHEL)](#containerized-deployment-rhel) for setup 
 
 Same panels as the Infinity Containerized dashboard, but Component Status comes from **json_exporter → Prometheus** instead of the Grafana Infinity plugin. Deploy json_exporter on the Gateway VM; Prometheus scrapes it; Grafana uses only a Prometheus datasource.
 
-- **Component Status (via json_exporter)** — Gateway, Controller, Hub, EDA, Redis status, and Redis mode from `aap_service_status` / `aap_redis_info` (parsed from `/api/gateway/v1/status/`).
+- **Component Status (via json_exporter)** — Gateway, Controller, Hub, EDA, Redis status, and Redis mode from `aap_gateway_status_up` / `aap_controller_status_up` / `aap_hub_status_up` / `aap_eda_status_up` / `aap_redis_info_up` (parsed from `/api/gateway/v1/status/`).
 - All other rows match the Infinity Containerized dashboard (mesh nodes, data services, jobs, latency, DB connections, event processing).
 
 **Scope:** Same coverage as the Infinity variant. Requires json_exporter on the Gateway VM (see [json_exporter/README.md](json_exporter/README.md)). No Infinity plugin required.
@@ -1304,7 +1304,7 @@ This section covers monitoring AAP 2.5/2.6 running as a **containerized deployme
 | Dashboard | Component Status source | File |
 |-----------|-------------------------|------|
 | **Infinity** | Grafana Infinity → `/api/gateway/v1/status/` | `grafana-aap-health-containerized-dashboard.json` |
-| **json_exporter** | json_exporter → Prometheus (`aap_service_status` / `aap_redis_info`) | `grafana-aap-health-containerized-json-exporter-dashboard.json` |
+| **json_exporter** | json_exporter → Prometheus (`aap_gateway_status_up` / `aap_controller_status_up` / `aap_hub_status_up` / `aap_eda_status_up` / `aap_redis_info_up`) | `grafana-aap-health-containerized-json-exporter-dashboard.json` |
 | **Prometheus-only** | None (Controller/mesh metrics only) | `grafana-aap-health-containerized-prom-only-dashboard.json` |
 
 For the **json_exporter** option, deploy the exporter on the Gateway VM and hand the scrape endpoint to your Prometheus team — see [json_exporter/README.md](json_exporter/README.md).

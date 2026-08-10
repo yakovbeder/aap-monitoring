@@ -14,15 +14,35 @@ Prometheus  -->  http://<gateway_host>:7979/probe  -->  json_exporter
 
 ## What you get
 
-json_exporter converts the Gateway status JSON into Prometheus metrics:
+The Gateway status API looks like this (services is a **list**, not a map):
+
+```json
+{
+  "status": "good",
+  "services": [
+    { "service_name": "controller", "status": "good" },
+    { "service_name": "hub", "status": "good" },
+    { "service_name": "eda", "status": "good" },
+    {
+      "service_name": "redis",
+      "status": "good",
+      "response": { "status": "good", "mode": "standalone", "ping": true }
+    }
+  ]
+}
+```
+
+json_exporter converts that into Prometheus metrics:
 
 ```
-aap_service_status{service="gateway", status="running"} 1
-aap_service_status{service="controller", status="running"} 1
-aap_service_status{service="hub", status="running"} 1
-aap_service_status{service="eda", status="running"} 1
-aap_redis_info{status="running", mode="standalone"} 1
+aap_gateway_status_up{status="good"} 1
+aap_controller_status_up{status="good"} 1
+aap_hub_status_up{status="good"} 1
+aap_eda_status_up{status="good"} 1
+aap_redis_info_up{mode="standalone",status="good"} 1
 ```
+
+Metric names end with `_up` because the config uses `values.up: 1`.
 
 Use these metrics with the dashboard:
 
@@ -98,9 +118,9 @@ curl "http://localhost:7979/probe?module=aap_gateway&target=https://localhost/ap
 Expected output includes lines such as:
 
 ```
-aap_service_status{service="gateway",status="running"} 1
-aap_service_status{service="controller",status="running"} 1
-aap_redis_info{mode="standalone",status="running"} 1
+aap_gateway_status_up{status="good"} 1
+aap_controller_status_up{status="good"} 1
+aap_redis_info_up{mode="standalone",status="good"} 1
 ```
 
 Hub and EDA lines appear only when those components are installed (`allow_missing_key: true` in the config).

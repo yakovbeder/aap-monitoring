@@ -4,6 +4,25 @@
 # Deploy this file to the Gateway VM at /etc/json_exporter/config.yml
 # See json_exporter/README.md for install and Prometheus handoff instructions.
 #
+# Actual Gateway status shape (containerized AAP):
+# {
+#   "status": "good",
+#   "services": [
+#     { "service_name": "controller", "status": "good" },
+#     { "service_name": "hub", "status": "good" },
+#     { "service_name": "eda", "status": "good" },
+#     {
+#       "service_name": "redis",
+#       "status": "good",
+#       "response": { "status": "good", "mode": "standalone", "ping": true }
+#     }
+#   ]
+# }
+# Redis metric path uses .response so mode/status labels resolve.
+#
+# Overall platform status is top-level "status" (no separate gateway service entry).
+# Each metric name must be unique.
+#
 modules:
   aap_gateway:
     headers:
@@ -15,51 +34,48 @@ modules:
       tls_config:
         insecure_skip_verify: true
     metrics:
-      - name: aap_service_status
+      # Overall platform / gateway status (top-level)
+      - name: aap_gateway_status
         type: object
-        path: "{ .services.gateway }"
-        help: AAP Gateway component status from /api/gateway/v1/status/
+        path: "{$}"
+        help: AAP overall platform status from /api/gateway/v1/status/
         labels:
-          service: gateway
           status: "{ .status }"
         values:
           up: 1
 
-      - name: aap_service_status
+      - name: aap_controller_status
         type: object
-        path: "{ .services.controller }"
+        path: '{.services[?(@.service_name=="controller")]}'
         help: AAP Controller component status from /api/gateway/v1/status/
         labels:
-          service: controller
           status: "{ .status }"
         values:
           up: 1
 
-      - name: aap_service_status
+      - name: aap_hub_status
         type: object
-        path: "{ .services.hub }"
+        path: '{.services[?(@.service_name=="hub")]}'
         help: AAP Hub component status from /api/gateway/v1/status/
         allow_missing_key: true
         labels:
-          service: hub
           status: "{ .status }"
         values:
           up: 1
 
-      - name: aap_service_status
+      - name: aap_eda_status
         type: object
-        path: "{ .services.eda }"
+        path: '{.services[?(@.service_name=="eda")]}'
         help: AAP EDA component status from /api/gateway/v1/status/
         allow_missing_key: true
         labels:
-          service: eda
           status: "{ .status }"
         values:
           up: 1
 
       - name: aap_redis_info
         type: object
-        path: "{ .services.redis }"
+        path: '{.services[?(@.service_name=="redis")].response}'
         help: AAP Redis status and mode from /api/gateway/v1/status/
         labels:
           status: "{ .status }"
