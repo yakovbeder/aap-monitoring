@@ -48,7 +48,7 @@
       "id": 30,
       "type": "stat",
       "title": "Gateway Status",
-      "description": "Platform Gateway / overall platform health from json_exporter (aap_gateway_status_up status label, sourced from /api/gateway/v1/status/).",
+      "description": "Overall platform / Gateway health from top-level status via json_exporter (aap_gateway_status_up), sourced from /api/gateway/v1/status/.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -177,7 +177,7 @@
       "id": 31,
       "type": "stat",
       "title": "Controller Status",
-      "description": "Automation Controller health from /api/gateway/v1/status/ (services.controller.status).",
+      "description": "Automation Controller health from json_exporter (aap_controller_status_up; services[] where service_name=controller).",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -306,7 +306,7 @@
       "id": 32,
       "type": "stat",
       "title": "Hub Status",
-      "description": "Automation Hub health from /api/gateway/v1/status/ (services.hub.status). Shows N/A if Hub is not installed.",
+      "description": "Automation Hub health from json_exporter (aap_hub_status_up; services[] where service_name=hub). Shows N/A if Hub is not installed.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -435,7 +435,7 @@
       "id": 33,
       "type": "stat",
       "title": "EDA Status",
-      "description": "Event-Driven Ansible health from /api/gateway/v1/status/ (services.eda.status). Shows N/A if EDA is not installed.",
+      "description": "Event-Driven Ansible health from json_exporter (aap_eda_status_up; services[] where service_name=eda). Shows N/A if EDA is not installed.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -564,7 +564,7 @@
       "id": 34,
       "type": "stat",
       "title": "Redis Status",
-      "description": "Centralized Redis health from /api/gateway/v1/status/ (services.redis.status). Complements the Controller-observed Redis queue panels below.",
+      "description": "Redis health from json_exporter (aap_redis_info_up status label; services[] where service_name=redis).",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -693,7 +693,7 @@
       "id": 35,
       "type": "stat",
       "title": "Redis Mode",
-      "description": "Redis deployment mode from /api/gateway/v1/status/ (services.redis.mode): standalone or cluster.",
+      "description": "Redis deployment mode from json_exporter (aap_redis_info_up mode label from response.mode): standalone or cluster.",
       "gridPos": {
         "h": 4,
         "w": 4,

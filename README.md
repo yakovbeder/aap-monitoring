@@ -1312,14 +1312,34 @@ For the **json_exporter** option, deploy the exporter on the Gateway VM and hand
 
 ### Monitoring Scope & Limitations
 
+Containerized AAP Gateway status JSON uses a **list** under `services` (not a map). Typical shape:
+
+```json
+{
+  "status": "good",
+  "services": [
+    { "service_name": "controller", "status": "good" },
+    { "service_name": "hub", "status": "good" },
+    { "service_name": "eda", "status": "good" },
+    {
+      "service_name": "redis",
+      "status": "good",
+      "response": { "status": "good", "mode": "standalone", "ping": true }
+    }
+  ]
+}
+```
+
+Overall / platform status is the top-level `status` field (there is usually no `service_name: gateway` entry).
+
 | Target | Covered? | How |
 |--------|----------|-----|
-| **Gateway** | Yes* | Infinity **or** json_exporter → `/api/gateway/v1/status/` (`services.gateway.status`); Prometheus `up` also indicates scrape reachability |
-| **Controller** | Yes | Status via Infinity/json_exporter + full `awx_*` / `task_manager_*` / `callback_receiver_*` metrics |
+| **Gateway / platform** | Yes* | Infinity **or** json_exporter → top-level `status` from `/api/gateway/v1/status/`; Prometheus `up` also indicates Controller scrape reachability |
+| **Controller** | Yes | Status via Infinity/json_exporter (`service_name=controller`) + full `awx_*` / `task_manager_*` / `callback_receiver_*` metrics |
 | **Execution / Hop nodes** | Yes | Registered mesh nodes via `awx_instance_info` / capacity with `node_type` |
-| **Hub** | Yes* | Infinity **or** json_exporter → `/api/gateway/v1/status/` (`services.hub.status`); N/A if Hub is not installed |
-| **EDA** | Yes* | Infinity **or** json_exporter → `/api/gateway/v1/status/` (`services.eda.status`); N/A if EDA is not installed |
-| **Redis** | Yes* | Infinity/json_exporter status + mode; Prometheus queue depth via `callback_receiver_events_queue_size_redis` |
+| **Hub** | Yes* | Infinity **or** json_exporter (`service_name=hub`); N/A if Hub is not installed |
+| **EDA** | Yes* | Infinity **or** json_exporter (`service_name=eda`); N/A if EDA is not installed |
+| **Redis** | Yes* | Infinity/json_exporter status + `response.mode`; Prometheus queue depth via `callback_receiver_events_queue_size_redis` |
 | **PostgreSQL** | Partial | Controller-observed connections + latency (`awx_database_connections_total`, commit/event processing gauges). Not an independent Grafana `SELECT 1` probe. |
 
 \* Gateway/Hub/EDA/Redis status and Redis mode require either the **Infinity** dashboard or the **json_exporter** dashboard. The Prometheus-only dashboard does not include those panels.
@@ -1331,7 +1351,7 @@ curl -k -H "Authorization: Bearer <token>" \
   https://<gateway_host>/api/gateway/v1/status/
 ```
 
-This returns JSON including Gateway, Controller, Hub, EDA, and Redis (`mode`, `status`, `ping`).
+You should see top-level `status` plus a `services` **array** of objects with `service_name` / `status` (Redis may include `response.mode`).
 
 ### Prerequisites (Containerized)
 
@@ -1348,9 +1368,9 @@ This returns JSON including Gateway, Controller, Hub, EDA, and Redis (`mode`, `s
 
 **1. Create an OAuth2 token in AAP**
 
-Create a personal access token (PAT) for a user with at least `System Auditor` role in the AAP Controller. Go to **Users → <user> → Tokens → Create Token**, select scope `read`, and copy the token value.
+Create a personal access token (PAT) for a user with at least `System Auditor` role. In the UI: **Users → <user> → Tokens → Create Token**, select scope `read`, and copy the token value.
 
-Alternatively, use the API:
+Alternatively, use the API (Controller path; on some AAP 2.5+ installs you can also use `POST /api/gateway/v1/tokens/`):
 
 ```bash
 curl -k -X POST https://<gateway_host>/api/controller/v2/tokens/ \

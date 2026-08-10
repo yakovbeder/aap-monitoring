@@ -48,7 +48,7 @@
       "id": 30,
       "type": "stat",
       "title": "Gateway Status",
-      "description": "Platform Gateway health from /api/gateway/v1/status/ (services.gateway.status). Requires Grafana Infinity datasource pointed at the AAP Gateway with a Bearer token.",
+      "description": "Overall platform / Gateway health from top-level status in /api/gateway/v1/status/. Requires Grafana Infinity datasource pointed at the AAP Gateway with a Bearer token.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -75,7 +75,7 @@
             "data": ""
           },
           "parser": "uql",
-          "uql": "parse-json\n| project \"status\"=\"services.gateway.status\"",
+          "uql": "parse-json\n| project \"status\"=\"status\"",
           "root_selector": "",
           "columns": [],
           "filters": []
@@ -152,7 +152,7 @@
       "id": 31,
       "type": "stat",
       "title": "Controller Status",
-      "description": "Automation Controller health from /api/gateway/v1/status/ (services.controller.status).",
+      "description": "Automation Controller health from /api/gateway/v1/status/ (services[] where service_name=controller).",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -179,7 +179,7 @@
             "data": ""
           },
           "parser": "uql",
-          "uql": "parse-json\n| project \"status\"=\"services.controller.status\"",
+          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"controller\"\n| project \"status\"=\"svc.status\"",
           "root_selector": "",
           "columns": [],
           "filters": []
@@ -256,7 +256,7 @@
       "id": 32,
       "type": "stat",
       "title": "Hub Status",
-      "description": "Automation Hub health from /api/gateway/v1/status/ (services.hub.status). Shows N/A if Hub is not installed.",
+      "description": "Automation Hub health from /api/gateway/v1/status/ (services[] where service_name=hub). Shows N/A if Hub is not installed.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -283,7 +283,7 @@
             "data": ""
           },
           "parser": "uql",
-          "uql": "parse-json\n| project \"status\"=\"services.hub.status\"",
+          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"hub\"\n| project \"status\"=\"svc.status\"",
           "root_selector": "",
           "columns": [],
           "filters": [],
@@ -363,7 +363,7 @@
       "id": 33,
       "type": "stat",
       "title": "EDA Status",
-      "description": "Event-Driven Ansible health from /api/gateway/v1/status/ (services.eda.status). Shows N/A if EDA is not installed.",
+      "description": "Event-Driven Ansible health from /api/gateway/v1/status/ (services[] where service_name=eda). Shows N/A if EDA is not installed.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -390,7 +390,7 @@
             "data": ""
           },
           "parser": "uql",
-          "uql": "parse-json\n| project \"status\"=\"services.eda.status\"",
+          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"eda\"\n| project \"status\"=\"svc.status\"",
           "root_selector": "",
           "columns": [],
           "filters": [],
@@ -470,7 +470,7 @@
       "id": 34,
       "type": "stat",
       "title": "Redis Status",
-      "description": "Centralized Redis health from /api/gateway/v1/status/ (services.redis.status). Complements the Controller-observed Redis queue panels below.",
+      "description": "Redis health from /api/gateway/v1/status/ (services[] where service_name=redis). Complements the Controller-observed Redis queue panels below.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -497,7 +497,7 @@
             "data": ""
           },
           "parser": "uql",
-          "uql": "parse-json\n| project \"status\"=\"services.redis.status\"",
+          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"redis\"\n| project \"status\"=\"svc.status\"",
           "root_selector": "",
           "columns": [],
           "filters": []
@@ -574,7 +574,7 @@
       "id": 35,
       "type": "stat",
       "title": "Redis Mode",
-      "description": "Redis deployment mode from /api/gateway/v1/status/ (services.redis.mode): standalone or cluster.",
+      "description": "Redis deployment mode from /api/gateway/v1/status/ (services[].response.mode for service_name=redis): standalone or cluster.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -601,7 +601,7 @@
             "data": ""
           },
           "parser": "uql",
-          "uql": "parse-json\n| project \"mode\"=\"services.redis.mode\"",
+          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"redis\"\n| project \"mode\"=\"svc.response.mode\"",
           "root_selector": "",
           "columns": [],
           "filters": []

@@ -171,6 +171,7 @@ This is the standard multi-target exporter pattern (same idea as blackbox_export
 |---------|--------|
 | `curl` to `:7979/probe` fails | `systemctl status json_exporter`, firewall for 7979 |
 | Probe returns HTTP 401/403 | Token in `/etc/json_exporter/aap-token`, token scope `read` |
+| Service fails to start / permission denied | `chown -R json_exporter: /etc/json_exporter` and `chmod 600` on the token file |
 | Probe returns TLS errors | `tls_config.insecure_skip_verify` in `config.yml`, or install a trusted CA |
 | Missing Hub/EDA metrics | Expected when those components are not installed |
 | Grafana panels show N/A | Confirm Prometheus is scraping the job and metrics exist in Prometheus UI |
@@ -181,4 +182,3 @@ This is the standard multi-target exporter pattern (same idea as blackbox_export
 |------|---------|
 | [aap-gateway-status.yml](aap-gateway-status.yml) | json_exporter module config |
 | [grafana-aap-health-containerized-json-exporter-dashboard.json](grafana-aap-health-containerized-json-exporter-dashboard.json) | Grafana dashboard that queries these metrics |
-| [README.md](README.md) | Deploy guide and Prometheus scrape handoff |
