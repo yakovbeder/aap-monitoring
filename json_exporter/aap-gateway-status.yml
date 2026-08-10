@@ -1,0 +1,68 @@
+---
+# json_exporter module for AAP Gateway /api/gateway/v1/status/
+#
+# Deploy this file to the Gateway VM at /etc/json_exporter/config.yml
+# See json_exporter/README.md for install and Prometheus handoff instructions.
+#
+modules:
+  aap_gateway:
+    headers:
+      Accept: application/json
+    http_client_config:
+      authorization:
+        type: Bearer
+        credentials_file: /etc/json_exporter/aap-token
+      tls_config:
+        insecure_skip_verify: true
+    metrics:
+      - name: aap_service_status
+        type: object
+        path: "{ .services.gateway }"
+        help: AAP Gateway component status from /api/gateway/v1/status/
+        labels:
+          service: gateway
+          status: "{ .status }"
+        values:
+          up: 1
+
+      - name: aap_service_status
+        type: object
+        path: "{ .services.controller }"
+        help: AAP Controller component status from /api/gateway/v1/status/
+        labels:
+          service: controller
+          status: "{ .status }"
+        values:
+          up: 1
+
+      - name: aap_service_status
+        type: object
+        path: "{ .services.hub }"
+        help: AAP Hub component status from /api/gateway/v1/status/
+        allow_missing_key: true
+        labels:
+          service: hub
+          status: "{ .status }"
+        values:
+          up: 1
+
+      - name: aap_service_status
+        type: object
+        path: "{ .services.eda }"
+        help: AAP EDA component status from /api/gateway/v1/status/
+        allow_missing_key: true
+        labels:
+          service: eda
+          status: "{ .status }"
+        values:
+          up: 1
+
+      - name: aap_redis_info
+        type: object
+        path: "{ .services.redis }"
+        help: AAP Redis status and mode from /api/gateway/v1/status/
+        labels:
+          status: "{ .status }"
+          mode: "{ .mode }"
+        values:
+          up: 1
