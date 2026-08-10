@@ -240,6 +240,19 @@ jobs:
                       f"{dashboard_path}: missing series reference {series!r}"
                   )
 
+          # Keep downloadable copy under json_exporter/ in sync with suite copy
+          handoff_path = Path(
+              "json_exporter/grafana-aap-health-containerized-json-exporter-dashboard.json"
+          )
+          if not handoff_path.exists():
+              raise SystemExit(f"missing {handoff_path}")
+          if dashboard_path.read_bytes() != handoff_path.read_bytes():
+              raise SystemExit(
+                  f"{handoff_path} differs from {dashboard_path}; "
+                  "keep the two json_exporter dashboard copies identical"
+              )
+
           print(f"validated {config_path}")
           print(f"validated {dashboard_path} against {sorted(expected_series)}")
+          print(f"validated identical copies: {dashboard_path} == {handoff_path}")
           PY
