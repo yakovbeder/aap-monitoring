@@ -23,7 +23,7 @@
       }
     ]
   },
-  "description": "Health dashboard for containerized AAP 2.5/2.6 on RHEL. Uses Prometheus metrics from /api/controller/v2/metrics/ plus Grafana Infinity queries against /api/gateway/v1/status/ for component status (Gateway, Controller, Hub, EDA, Redis status/mode). Also covers registered mesh nodes (control, hybrid, execution, hop), Controller-observed PostgreSQL/Redis queue signals, jobs, latency, and event processing.",
+  "description": "Health dashboard for containerized AAP 2.5/2.6 on RHEL. Uses Prometheus metrics from /api/controller/v2/metrics/ only. Covers registered mesh nodes (control, hybrid, execution, hop), Controller-observed PostgreSQL/Redis signals, jobs, latency, and event processing. Gateway reachability is inferred from the Prometheus up scrape status. For full component status (Gateway, Hub, EDA, Redis mode), use the Infinity variant of this dashboard.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -31,643 +31,6 @@
   "links": [],
   "liveNow": false,
   "panels": [
-    {
-      "id": 29,
-      "type": "row",
-      "title": "Component Status (via Gateway API)",
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "panels": []
-    },
-    {
-      "id": 30,
-      "type": "stat",
-      "title": "Gateway Status",
-      "description": "Overall platform / Gateway health from top-level status in /api/gateway/v1/status/. Requires Grafana Infinity datasource pointed at the AAP Gateway with a Bearer token.",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 0,
-        "y": 1
-      },
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
-          },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| project \"status\"=\"status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": []
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "good": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                }
-              }
-            },
-            {
-              "type": "special",
-              "options": {
-                "match": "null+nan",
-                "result": {
-                  "color": "orange",
-                  "index": 1,
-                  "text": "N/A"
-                }
-              }
-            },
-            {
-              "type": "regex",
-              "options": {
-                "pattern": "^(?!good$).+",
-                "result": {
-                  "color": "red",
-                  "index": 2,
-                  "text": "DOWN"
-                }
-              }
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "orange",
-                "value": null
-              }
-            ]
-          },
-          "noValue": "N/A"
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/status/i",
-          "values": false
-        },
-        "textMode": "auto"
-      }
-    },
-    {
-      "id": 31,
-      "type": "stat",
-      "title": "Controller Status",
-      "description": "Automation Controller health from /api/gateway/v1/status/ (services[] where service_name=controller).",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 4,
-        "y": 1
-      },
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
-          },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"controller\"\n| project \"status\"=\"svc.status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": []
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "good": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                }
-              }
-            },
-            {
-              "type": "special",
-              "options": {
-                "match": "null+nan",
-                "result": {
-                  "color": "orange",
-                  "index": 1,
-                  "text": "N/A"
-                }
-              }
-            },
-            {
-              "type": "regex",
-              "options": {
-                "pattern": "^(?!good$).+",
-                "result": {
-                  "color": "red",
-                  "index": 2,
-                  "text": "DOWN"
-                }
-              }
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "orange",
-                "value": null
-              }
-            ]
-          },
-          "noValue": "N/A"
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/status/i",
-          "values": false
-        },
-        "textMode": "auto"
-      }
-    },
-    {
-      "id": 32,
-      "type": "stat",
-      "title": "Hub Status",
-      "description": "Automation Hub health from /api/gateway/v1/status/ (services[] where service_name=hub). Shows N/A if Hub is not installed.",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 1
-      },
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
-          },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"hub\"\n| project \"status\"=\"svc.status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": [],
-          "json_options": {
-            "root_is_not_array": true
-          }
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "good": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                }
-              }
-            },
-            {
-              "type": "special",
-              "options": {
-                "match": "null+nan",
-                "result": {
-                  "color": "orange",
-                  "index": 1,
-                  "text": "N/A"
-                }
-              }
-            },
-            {
-              "type": "regex",
-              "options": {
-                "pattern": "^(?!good$).+",
-                "result": {
-                  "color": "red",
-                  "index": 2,
-                  "text": "DOWN"
-                }
-              }
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "orange",
-                "value": null
-              }
-            ]
-          },
-          "noValue": "N/A"
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/status/i",
-          "values": false
-        },
-        "textMode": "auto"
-      }
-    },
-    {
-      "id": 33,
-      "type": "stat",
-      "title": "EDA Status",
-      "description": "Event-Driven Ansible health from /api/gateway/v1/status/ (services[] where service_name=eda). Shows N/A if EDA is not installed.",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 1
-      },
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
-          },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"eda\"\n| project \"status\"=\"svc.status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": [],
-          "json_options": {
-            "root_is_not_array": true
-          }
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "good": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                }
-              }
-            },
-            {
-              "type": "special",
-              "options": {
-                "match": "null+nan",
-                "result": {
-                  "color": "orange",
-                  "index": 1,
-                  "text": "N/A"
-                }
-              }
-            },
-            {
-              "type": "regex",
-              "options": {
-                "pattern": "^(?!good$).+",
-                "result": {
-                  "color": "red",
-                  "index": 2,
-                  "text": "DOWN"
-                }
-              }
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "orange",
-                "value": null
-              }
-            ]
-          },
-          "noValue": "N/A"
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/status/i",
-          "values": false
-        },
-        "textMode": "auto"
-      }
-    },
-    {
-      "id": 34,
-      "type": "stat",
-      "title": "Redis Status",
-      "description": "Redis health from /api/gateway/v1/status/ (services[] where service_name=redis). Complements the Controller-observed Redis queue panels below.",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 1
-      },
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
-          },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"redis\"\n| project \"status\"=\"svc.status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": []
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "good": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                }
-              }
-            },
-            {
-              "type": "special",
-              "options": {
-                "match": "null+nan",
-                "result": {
-                  "color": "orange",
-                  "index": 1,
-                  "text": "N/A"
-                }
-              }
-            },
-            {
-              "type": "regex",
-              "options": {
-                "pattern": "^(?!good$).+",
-                "result": {
-                  "color": "red",
-                  "index": 2,
-                  "text": "DOWN"
-                }
-              }
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "orange",
-                "value": null
-              }
-            ]
-          },
-          "noValue": "N/A"
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/status/i",
-          "values": false
-        },
-        "textMode": "auto"
-      }
-    },
-    {
-      "id": 35,
-      "type": "stat",
-      "title": "Redis Mode",
-      "description": "Redis deployment mode from /api/gateway/v1/status/ (services[].response.mode for service_name=redis): standalone or cluster.",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 1
-      },
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
-          },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"redis\"\n| project \"mode\"=\"svc.response.mode\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": []
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "standalone": {
-                  "color": "blue",
-                  "index": 0,
-                  "text": "Standalone"
-                },
-                "cluster": {
-                  "color": "blue",
-                  "index": 1,
-                  "text": "Cluster"
-                }
-              }
-            },
-            {
-              "type": "special",
-              "options": {
-                "match": "null+nan",
-                "result": {
-                  "color": "orange",
-                  "index": 2,
-                  "text": "N/A"
-                }
-              }
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "orange",
-                "value": null
-              }
-            ]
-          },
-          "noValue": "N/A"
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/mode/i",
-          "values": false
-        },
-        "textMode": "auto"
-      }
-    },
     {
       "collapsed": false,
       "datasource": {
@@ -678,7 +41,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 0
       },
       "id": 1,
       "panels": [],
@@ -739,7 +102,7 @@
         "h": 4,
         "w": 5,
         "x": 0,
-        "y": 6
+        "y": 1
       },
       "id": 19,
       "options": {
@@ -805,7 +168,7 @@
         "h": 4,
         "w": 5,
         "x": 5,
-        "y": 6
+        "y": 1
       },
       "id": 20,
       "options": {
@@ -871,7 +234,7 @@
         "h": 4,
         "w": 5,
         "x": 10,
-        "y": 6
+        "y": 1
       },
       "id": 21,
       "options": {
@@ -937,7 +300,7 @@
         "h": 4,
         "w": 4,
         "x": 15,
-        "y": 6
+        "y": 1
       },
       "id": 22,
       "options": {
@@ -999,7 +362,7 @@
         "h": 4,
         "w": 5,
         "x": 19,
-        "y": 6
+        "y": 1
       },
       "id": 23,
       "options": {
@@ -1083,7 +446,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 10
+        "y": 5
       },
       "id": 2,
       "options": {
@@ -1149,7 +512,7 @@
         "h": 8,
         "w": 6,
         "x": 12,
-        "y": 10
+        "y": 5
       },
       "id": 3,
       "options": {
@@ -1216,7 +579,7 @@
         "h": 8,
         "w": 6,
         "x": 18,
-        "y": 10
+        "y": 5
       },
       "id": 4,
       "options": {
@@ -1260,7 +623,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 13
       },
       "id": 24,
       "panels": [],
@@ -1321,7 +684,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 19
+        "y": 14
       },
       "id": 25,
       "options": {
@@ -1422,7 +785,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 19
+        "y": 14
       },
       "id": 26,
       "options": {
@@ -1509,7 +872,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 19
+        "y": 14
       },
       "id": 27,
       "options": {
@@ -1579,7 +942,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 19
+        "y": 14
       },
       "id": 28,
       "options": {
@@ -1622,7 +985,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 18
       },
       "id": 5,
       "panels": [],
@@ -1665,7 +1028,7 @@
         "h": 5,
         "w": 5,
         "x": 0,
-        "y": 24
+        "y": 19
       },
       "id": 6,
       "options": {
@@ -1735,7 +1098,7 @@
         "h": 5,
         "w": 5,
         "x": 5,
-        "y": 24
+        "y": 19
       },
       "id": 7,
       "options": {
@@ -1798,7 +1161,7 @@
         "h": 5,
         "w": 5,
         "x": 10,
-        "y": 24
+        "y": 19
       },
       "id": 8,
       "options": {
@@ -1880,7 +1243,7 @@
         "h": 5,
         "w": 5,
         "x": 15,
-        "y": 24
+        "y": 19
       },
       "id": 9,
       "options": {
@@ -1951,7 +1314,7 @@
         "h": 5,
         "w": 4,
         "x": 20,
-        "y": 24
+        "y": 19
       },
       "id": 10,
       "options": {
@@ -2010,7 +1373,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 24
       },
       "hiddenSeries": false,
       "id": 11,
@@ -2170,7 +1533,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 32
       },
       "id": 12,
       "panels": [],
@@ -2199,7 +1562,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 38
+        "y": 33
       },
       "hiddenSeries": false,
       "id": 13,
@@ -2301,7 +1664,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 38
+        "y": 33
       },
       "hiddenSeries": false,
       "id": 14,
@@ -2444,7 +1807,7 @@
         "h": 8,
         "w": 6,
         "x": 16,
-        "y": 38
+        "y": 33
       },
       "hiddenSeries": false,
       "id": 15,
@@ -2587,7 +1950,7 @@
         "h": 8,
         "w": 2,
         "x": 22,
-        "y": 38
+        "y": 33
       },
       "id": 16,
       "options": {
@@ -2630,7 +1993,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 46
+        "y": 41
       },
       "id": 17,
       "panels": [],
@@ -2653,7 +2016,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 42
       },
       "hiddenSeries": false,
       "id": 18,
@@ -2773,20 +2136,6 @@
       },
       {
         "current": {},
-        "hide": 0,
-        "includeAll": false,
-        "label": "Status Datasource (Infinity)",
-        "multi": false,
-        "name": "status_datasource",
-        "options": [],
-        "query": "yesoreyeram-infinity-datasource",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "type": "datasource"
-      },
-      {
-        "current": {},
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
@@ -2839,8 +2188,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "AAP - Health & Monitoring (Containerized)",
-  "uid": "aap-health-containerized",
+  "title": "AAP - Health & Monitoring (Containerized, Prometheus-only)",
+  "uid": "aap-health-containerized-prom-only",
   "version": 3,
   "weekStart": ""
 }

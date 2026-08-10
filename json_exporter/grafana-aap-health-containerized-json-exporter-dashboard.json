@@ -23,7 +23,7 @@
       }
     ]
   },
-  "description": "Health dashboard for containerized AAP 2.5/2.6 on RHEL. Uses Prometheus metrics from /api/controller/v2/metrics/ plus Grafana Infinity queries against /api/gateway/v1/status/ for component status (Gateway, Controller, Hub, EDA, Redis status/mode). Also covers registered mesh nodes (control, hybrid, execution, hop), Controller-observed PostgreSQL/Redis queue signals, jobs, latency, and event processing.",
+  "description": "Health dashboard for containerized AAP 2.5/2.6 on RHEL. Uses Prometheus metrics from /api/controller/v2/metrics/ plus json_exporter metrics (aap_gateway_status_up / aap_controller_status_up / aap_hub_status_up / aap_eda_status_up / aap_redis_info_up) scraped from /api/gateway/v1/status/. Requires json_exporter on the Gateway VM. See json_exporter/README.md for setup. No Grafana Infinity plugin required.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -48,7 +48,7 @@
       "id": 30,
       "type": "stat",
       "title": "Gateway Status",
-      "description": "Overall platform / Gateway health from top-level status in /api/gateway/v1/status/. Requires Grafana Infinity datasource pointed at the AAP Gateway with a Bearer token.",
+      "description": "Overall platform / Gateway health from top-level status via json_exporter (aap_gateway_status_up), sourced from /api/gateway/v1/status/.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -56,29 +56,21 @@
         "y": 1
       },
       "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
+        "type": "prometheus",
+        "uid": "${datasource}"
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| project \"status\"=\"status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": []
+          "editorMode": "code",
+          "expr": "aap_gateway_status_up",
+          "instant": true,
+          "legendFormat": "{{status}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "fieldConfig": {
@@ -93,7 +85,32 @@
                 "good": {
                   "color": "green",
                   "index": 0,
-                  "text": "UP"
+                  "text": "good"
+                },
+                "running": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "running"
+                },
+                "degraded": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "degraded"
+                },
+                "unavailable": {
+                  "color": "red",
+                  "index": 3,
+                  "text": "unavailable"
+                },
+                "error": {
+                  "color": "red",
+                  "index": 4,
+                  "text": "error"
+                },
+                "failed": {
+                  "color": "red",
+                  "index": 5,
+                  "text": "failed"
                 }
               }
             },
@@ -103,7 +120,7 @@
                 "match": "null+nan",
                 "result": {
                   "color": "orange",
-                  "index": 1,
+                  "index": 6,
                   "text": "N/A"
                 }
               }
@@ -111,10 +128,10 @@
             {
               "type": "regex",
               "options": {
-                "pattern": "^(?!good$).+",
+                "pattern": "^(?!good$|running$).+",
                 "result": {
                   "color": "red",
-                  "index": 2,
+                  "index": 7,
                   "text": "DOWN"
                 }
               }
@@ -142,17 +159,25 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/status/i",
+          "fields": "/^status$/",
           "values": false
         },
-        "textMode": "auto"
-      }
+        "textMode": "value"
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        }
+      ]
     },
     {
       "id": 31,
       "type": "stat",
       "title": "Controller Status",
-      "description": "Automation Controller health from /api/gateway/v1/status/ (services[] where service_name=controller).",
+      "description": "Automation Controller health from json_exporter (aap_controller_status_up; services[] where service_name=controller).",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -160,29 +185,21 @@
         "y": 1
       },
       "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
+        "type": "prometheus",
+        "uid": "${datasource}"
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"controller\"\n| project \"status\"=\"svc.status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": []
+          "editorMode": "code",
+          "expr": "aap_controller_status_up",
+          "instant": true,
+          "legendFormat": "{{status}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "fieldConfig": {
@@ -197,7 +214,32 @@
                 "good": {
                   "color": "green",
                   "index": 0,
-                  "text": "UP"
+                  "text": "good"
+                },
+                "running": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "running"
+                },
+                "degraded": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "degraded"
+                },
+                "unavailable": {
+                  "color": "red",
+                  "index": 3,
+                  "text": "unavailable"
+                },
+                "error": {
+                  "color": "red",
+                  "index": 4,
+                  "text": "error"
+                },
+                "failed": {
+                  "color": "red",
+                  "index": 5,
+                  "text": "failed"
                 }
               }
             },
@@ -207,7 +249,7 @@
                 "match": "null+nan",
                 "result": {
                   "color": "orange",
-                  "index": 1,
+                  "index": 6,
                   "text": "N/A"
                 }
               }
@@ -215,10 +257,10 @@
             {
               "type": "regex",
               "options": {
-                "pattern": "^(?!good$).+",
+                "pattern": "^(?!good$|running$).+",
                 "result": {
                   "color": "red",
-                  "index": 2,
+                  "index": 7,
                   "text": "DOWN"
                 }
               }
@@ -246,17 +288,25 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/status/i",
+          "fields": "/^status$/",
           "values": false
         },
-        "textMode": "auto"
-      }
+        "textMode": "value"
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        }
+      ]
     },
     {
       "id": 32,
       "type": "stat",
       "title": "Hub Status",
-      "description": "Automation Hub health from /api/gateway/v1/status/ (services[] where service_name=hub). Shows N/A if Hub is not installed.",
+      "description": "Automation Hub health from json_exporter (aap_hub_status_up; services[] where service_name=hub). Shows N/A if Hub is not installed.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -264,32 +314,21 @@
         "y": 1
       },
       "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
+        "type": "prometheus",
+        "uid": "${datasource}"
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"hub\"\n| project \"status\"=\"svc.status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": [],
-          "json_options": {
-            "root_is_not_array": true
-          }
+          "editorMode": "code",
+          "expr": "aap_hub_status_up",
+          "instant": true,
+          "legendFormat": "{{status}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "fieldConfig": {
@@ -304,7 +343,32 @@
                 "good": {
                   "color": "green",
                   "index": 0,
-                  "text": "UP"
+                  "text": "good"
+                },
+                "running": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "running"
+                },
+                "degraded": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "degraded"
+                },
+                "unavailable": {
+                  "color": "red",
+                  "index": 3,
+                  "text": "unavailable"
+                },
+                "error": {
+                  "color": "red",
+                  "index": 4,
+                  "text": "error"
+                },
+                "failed": {
+                  "color": "red",
+                  "index": 5,
+                  "text": "failed"
                 }
               }
             },
@@ -314,7 +378,7 @@
                 "match": "null+nan",
                 "result": {
                   "color": "orange",
-                  "index": 1,
+                  "index": 6,
                   "text": "N/A"
                 }
               }
@@ -322,10 +386,10 @@
             {
               "type": "regex",
               "options": {
-                "pattern": "^(?!good$).+",
+                "pattern": "^(?!good$|running$).+",
                 "result": {
                   "color": "red",
-                  "index": 2,
+                  "index": 7,
                   "text": "DOWN"
                 }
               }
@@ -353,17 +417,25 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/status/i",
+          "fields": "/^status$/",
           "values": false
         },
-        "textMode": "auto"
-      }
+        "textMode": "value"
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        }
+      ]
     },
     {
       "id": 33,
       "type": "stat",
       "title": "EDA Status",
-      "description": "Event-Driven Ansible health from /api/gateway/v1/status/ (services[] where service_name=eda). Shows N/A if EDA is not installed.",
+      "description": "Event-Driven Ansible health from json_exporter (aap_eda_status_up; services[] where service_name=eda). Shows N/A if EDA is not installed.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -371,32 +443,21 @@
         "y": 1
       },
       "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
+        "type": "prometheus",
+        "uid": "${datasource}"
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"eda\"\n| project \"status\"=\"svc.status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": [],
-          "json_options": {
-            "root_is_not_array": true
-          }
+          "editorMode": "code",
+          "expr": "aap_eda_status_up",
+          "instant": true,
+          "legendFormat": "{{status}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "fieldConfig": {
@@ -411,7 +472,32 @@
                 "good": {
                   "color": "green",
                   "index": 0,
-                  "text": "UP"
+                  "text": "good"
+                },
+                "running": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "running"
+                },
+                "degraded": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "degraded"
+                },
+                "unavailable": {
+                  "color": "red",
+                  "index": 3,
+                  "text": "unavailable"
+                },
+                "error": {
+                  "color": "red",
+                  "index": 4,
+                  "text": "error"
+                },
+                "failed": {
+                  "color": "red",
+                  "index": 5,
+                  "text": "failed"
                 }
               }
             },
@@ -421,7 +507,7 @@
                 "match": "null+nan",
                 "result": {
                   "color": "orange",
-                  "index": 1,
+                  "index": 6,
                   "text": "N/A"
                 }
               }
@@ -429,10 +515,10 @@
             {
               "type": "regex",
               "options": {
-                "pattern": "^(?!good$).+",
+                "pattern": "^(?!good$|running$).+",
                 "result": {
                   "color": "red",
-                  "index": 2,
+                  "index": 7,
                   "text": "DOWN"
                 }
               }
@@ -460,17 +546,25 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/status/i",
+          "fields": "/^status$/",
           "values": false
         },
-        "textMode": "auto"
-      }
+        "textMode": "value"
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        }
+      ]
     },
     {
       "id": 34,
       "type": "stat",
       "title": "Redis Status",
-      "description": "Redis health from /api/gateway/v1/status/ (services[] where service_name=redis). Complements the Controller-observed Redis queue panels below.",
+      "description": "Redis health from json_exporter (aap_redis_info_up status label; services[] where service_name=redis).",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -478,29 +572,21 @@
         "y": 1
       },
       "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
+        "type": "prometheus",
+        "uid": "${datasource}"
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"redis\"\n| project \"status\"=\"svc.status\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": []
+          "editorMode": "code",
+          "expr": "aap_redis_info_up",
+          "instant": true,
+          "legendFormat": "{{status}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "fieldConfig": {
@@ -515,7 +601,32 @@
                 "good": {
                   "color": "green",
                   "index": 0,
-                  "text": "UP"
+                  "text": "good"
+                },
+                "running": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "running"
+                },
+                "degraded": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "degraded"
+                },
+                "unavailable": {
+                  "color": "red",
+                  "index": 3,
+                  "text": "unavailable"
+                },
+                "error": {
+                  "color": "red",
+                  "index": 4,
+                  "text": "error"
+                },
+                "failed": {
+                  "color": "red",
+                  "index": 5,
+                  "text": "failed"
                 }
               }
             },
@@ -525,7 +636,7 @@
                 "match": "null+nan",
                 "result": {
                   "color": "orange",
-                  "index": 1,
+                  "index": 6,
                   "text": "N/A"
                 }
               }
@@ -533,10 +644,10 @@
             {
               "type": "regex",
               "options": {
-                "pattern": "^(?!good$).+",
+                "pattern": "^(?!good$|running$).+",
                 "result": {
                   "color": "red",
-                  "index": 2,
+                  "index": 7,
                   "text": "DOWN"
                 }
               }
@@ -564,17 +675,25 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/status/i",
+          "fields": "/^status$/",
           "values": false
         },
-        "textMode": "auto"
-      }
+        "textMode": "value"
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        }
+      ]
     },
     {
       "id": 35,
       "type": "stat",
       "title": "Redis Mode",
-      "description": "Redis deployment mode from /api/gateway/v1/status/ (services[].response.mode for service_name=redis): standalone or cluster.",
+      "description": "Redis deployment mode from json_exporter (aap_redis_info_up mode label from response.mode): standalone or cluster.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -582,29 +701,21 @@
         "y": 1
       },
       "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "${status_datasource}"
+        "type": "prometheus",
+        "uid": "${datasource}"
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "${status_datasource}"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "/api/gateway/v1/status/",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "uql",
-          "uql": "parse-json\n| mv-expand \"svc\"=\"services\"\n| where \"svc.service_name\" == \"redis\"\n| project \"mode\"=\"svc.response.mode\"",
-          "root_selector": "",
-          "columns": [],
-          "filters": []
+          "editorMode": "code",
+          "expr": "aap_redis_info_up",
+          "instant": true,
+          "legendFormat": "{{mode}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "fieldConfig": {
@@ -619,12 +730,12 @@
                 "standalone": {
                   "color": "blue",
                   "index": 0,
-                  "text": "Standalone"
+                  "text": "standalone"
                 },
                 "cluster": {
-                  "color": "blue",
+                  "color": "purple",
                   "index": 1,
-                  "text": "Cluster"
+                  "text": "cluster"
                 }
               }
             },
@@ -662,11 +773,19 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/mode/i",
+          "fields": "/^mode$/",
           "values": false
         },
-        "textMode": "auto"
-      }
+        "textMode": "value"
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        }
+      ]
     },
     {
       "collapsed": false,
@@ -2773,20 +2892,6 @@
       },
       {
         "current": {},
-        "hide": 0,
-        "includeAll": false,
-        "label": "Status Datasource (Infinity)",
-        "multi": false,
-        "name": "status_datasource",
-        "options": [],
-        "query": "yesoreyeram-infinity-datasource",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "type": "datasource"
-      },
-      {
-        "current": {},
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
@@ -2839,8 +2944,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "AAP - Health & Monitoring (Containerized)",
-  "uid": "aap-health-containerized",
+  "title": "AAP - Health & Monitoring (Containerized, json_exporter)",
+  "uid": "aap-health-containerized-json-exporter",
   "version": 3,
   "weekStart": ""
 }

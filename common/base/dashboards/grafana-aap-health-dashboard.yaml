@@ -3397,7 +3397,7 @@ spec:
                 ],
                 "thresholds": [],
                 "timeRegions": [],
-                "title": "Gateway / API Processing Time",
+                "title": "Controller Processing Time",
                 "tooltip": {
                     "shared": true,
                     "sort": 0,

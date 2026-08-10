@@ -39,7 +39,9 @@ jobs:
           import yaml
 
           yaml_files = []
-          for root in (Path("common"), Path("overlays"), Path(".github/workflows")):
+          for root in (Path("common"), Path("overlays"), Path("json_exporter"), Path(".github/workflows")):
+              if not root.exists():
+                  continue
               yaml_files.extend(sorted(root.rglob("*.yaml")))
               yaml_files.extend(sorted(root.rglob("*.yml")))
 
@@ -116,4 +118,141 @@ jobs:
                   raise SystemExit(f"{path}: missing 'templating' key")
 
               print(f"validated {path}")
+          PY
+
+      - name: Validate json_exporter config and dashboard contract
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          import yaml
+
+          config_path = Path("json_exporter/aap-gateway-status.yml")
+          dashboard_path = Path(
+              "common/base/dashboards/grafana-aap-health-containerized-json-exporter-dashboard.json"
+          )
+
+          if not config_path.exists():
+              raise SystemExit(f"missing {config_path}")
+          if not dashboard_path.exists():
+              raise SystemExit(f"missing {dashboard_path}")
+
+          with config_path.open() as handle:
+              config = yaml.safe_load(handle)
+
+          modules = config.get("modules") or {}
+          if "aap_gateway" not in modules:
+              raise SystemExit(f"{config_path}: missing modules.aap_gateway")
+
+          metric_names = []
+          for metric in modules["aap_gateway"].get("metrics") or []:
+              name = metric.get("name")
+              if not name:
+                  raise SystemExit(f"{config_path}: metric missing name")
+              if name in metric_names:
+                  raise SystemExit(f"{config_path}: duplicate metric name {name!r}")
+              metric_names.append(name)
+              if "path" not in metric:
+                  raise SystemExit(f"{config_path}: metric {name!r} missing path")
+
+          expected_bases = {
+              "aap_gateway_status",
+              "aap_controller_status",
+              "aap_hub_status",
+              "aap_eda_status",
+              "aap_redis_info",
+          }
+          if set(metric_names) != expected_bases:
+              raise SystemExit(
+                  f"{config_path}: unexpected metric names {sorted(metric_names)}; "
+                  f"expected {sorted(expected_bases)}"
+              )
+
+          # values.up: 1 produces series names with _up suffix
+          expected_series = {f"{name}_up" for name in expected_bases}
+
+          with dashboard_path.open() as handle:
+              dashboard = json.load(handle)
+
+          text = dashboard_path.read_text()
+          for forbidden in (
+              "yesoreyeram-infinity-datasource",
+              "status_datasource",
+          ):
+              if forbidden in text:
+                  raise SystemExit(
+                      f"{dashboard_path}: must not reference {forbidden!r}"
+                  )
+
+          var_names = [
+              t.get("name")
+              for t in dashboard.get("templating", {}).get("list", [])
+          ]
+          if "status_datasource" in var_names:
+              raise SystemExit(
+                  f"{dashboard_path}: must not define status_datasource"
+              )
+
+          status_panels = {
+              "Gateway Status": "aap_gateway_status_up",
+              "Controller Status": "aap_controller_status_up",
+              "Hub Status": "aap_hub_status_up",
+              "EDA Status": "aap_eda_status_up",
+              "Redis Status": "aap_redis_info_up",
+              "Redis Mode": "aap_redis_info_up",
+          }
+          found = {}
+          for panel in dashboard.get("panels", []):
+              title = panel.get("title")
+              if title not in status_panels:
+                  continue
+              targets = panel.get("targets") or []
+              if not targets:
+                  raise SystemExit(
+                      f"{dashboard_path}: panel {title!r} has no targets"
+                  )
+              expr = targets[0].get("expr", "")
+              expected = status_panels[title]
+              if expr != expected:
+                  raise SystemExit(
+                      f"{dashboard_path}: panel {title!r} expr={expr!r}, "
+                      f"expected {expected!r}"
+                  )
+              ds = panel.get("datasource") or {}
+              if ds.get("type") != "prometheus":
+                  raise SystemExit(
+                      f"{dashboard_path}: panel {title!r} datasource type "
+                      "must be prometheus"
+                  )
+              found[title] = expr
+
+          missing = set(status_panels) - set(found)
+          if missing:
+              raise SystemExit(
+                  f"{dashboard_path}: missing status panels {sorted(missing)}"
+              )
+
+          for series in expected_series:
+              if not re.search(rf"\b{re.escape(series)}\b", text):
+                  raise SystemExit(
+                      f"{dashboard_path}: missing series reference {series!r}"
+                  )
+
+          # Keep downloadable copy under json_exporter/ in sync with suite copy
+          handoff_path = Path(
+              "json_exporter/grafana-aap-health-containerized-json-exporter-dashboard.json"
+          )
+          if not handoff_path.exists():
+              raise SystemExit(f"missing {handoff_path}")
+          if dashboard_path.read_bytes() != handoff_path.read_bytes():
+              raise SystemExit(
+                  f"{handoff_path} differs from {dashboard_path}; "
+                  "keep the two json_exporter dashboard copies identical"
+              )
+
+          print(f"validated {config_path}")
+          print(f"validated {dashboard_path} against {sorted(expected_series)}")
+          print(f"validated identical copies: {dashboard_path} == {handoff_path}")
           PY

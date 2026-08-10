@@ -33,6 +33,8 @@
   - [AAP - Overview](#aap---overview)
   - [AAP - Health & Monitoring](#aap---health--monitoring)
   - [AAP - Health & Monitoring (Containerized)](#aap---health--monitoring-containerized)
+  - [AAP - Health & Monitoring (Containerized, json_exporter)](#aap---health--monitoring-containerized-json_exporter)
+  - [AAP - Health & Monitoring (Containerized, Prometheus-only)](#aap---health--monitoring-containerized-prometheus-only)
   - [AAP - Jobs](#aap---jobs)
 - [Repository Structure](#repository-structure)
 - [Prerequisites](#prerequisites)
@@ -63,6 +65,7 @@
     - [Viewing the Dashboards (COO)](#viewing-the-dashboards-coo)
     - [Kustomize Deployment (COO)](#kustomize-deployment-coo)
 - [Containerized Deployment (RHEL)](#containerized-deployment-rhel)
+  - [Monitoring Scope & Limitations](#monitoring-scope--limitations)
   - [Prerequisites (Containerized)](#prerequisites-containerized)
   - [Prometheus Setup](#prometheus-setup)
   - [Grafana Setup and Dashboard Import](#grafana-setup-and-dashboard-import)
@@ -89,6 +92,7 @@ This repository provides complementary Grafana dashboards. Each dashboard is ava
 | Overview | `grafana-aap-overview-dashboard.yaml` | `grafana-aap-overview-dashboard.json` |
 | Health & Monitoring | `grafana-aap-health-dashboard.yaml` | `grafana-aap-health-dashboard.json` |
 | Health & Monitoring (Containerized) | — | `grafana-aap-health-containerized-dashboard.json` |
+| Health & Monitoring (Containerized, Prometheus-only) | — | `grafana-aap-health-containerized-prom-only-dashboard.json` |
 | Jobs | `grafana-aap-jobs-dashboard.yaml` | `grafana-aap-jobs-dashboard.json` |
 
 Files live under [`common/base/dashboards/`](common/base/dashboards/).
@@ -109,7 +113,7 @@ The "is everything working" dashboard. Monitors real-time health of all AAP comp
 - **Operator Health** — Individual status for each operator: Gateway, Controller, Hub, EDA, Resource, Metrics, and Lightspeed.
 - **Service Accessibility** — UP/DOWN for UI (gateway backend readiness), API (controller metrics endpoint reachability), PostgreSQL Accessible (direct Grafana→Postgres `SELECT 1` probe — independent of Controller metrics and Gateway, works with both internal and external DB), PostgreSQL Health (Controller-observed connections + latency: UP/DEGRADED/DOWN), DB Connections gauge, Redis Cluster replicas and pod-level health.
 - **Jobs Status** — Running, Pending, Failed jobs, Blocked Tasks, and Consumed Capacity. Includes time-series breakdown with deduplicated metrics.
-- **Latency** — Gateway/API processing time, PostgreSQL transaction latency, and Task Manager execution time.
+- **Latency** — Controller processing time, PostgreSQL transaction latency, and Task Manager execution time.
 - **Resource Health** — Peak CPU and Memory usage as % of configured limits with green/yellow/red thresholds, total namespace resource consumption, and top 5 consumers shown as instant bar gauges.
 - **Event Processing** — Redis queue depth, in-memory events, and average event processing time.
 
@@ -138,17 +142,58 @@ Every panel includes a tooltip (?) explaining what it monitors and why it matter
 
 ### AAP - Health & Monitoring (Containerized)
 
-A variant of the Health dashboard designed for **containerized AAP 2.5 on RHEL** (podman-based deployment). Uses only `awx_*` and controller metrics available from the `/api/controller/v2/metrics/` endpoint — no Kubernetes, cAdvisor, or kube-state-metrics dependencies.
+A variant of the Health dashboard designed for **containerized AAP 2.5/2.6 on RHEL** (podman-based deployment). Uses **Prometheus** metrics from `/api/controller/v2/metrics/` plus **Grafana Infinity** queries against `/api/gateway/v1/status/` for component status. No Kubernetes, cAdvisor, kube-state-metrics, blackbox, or json_exporter.
 
-- **Instance Health** — Controller instance info table (`awx_instance_info`), per-instance capacity gauge, and remaining capacity. Replaces the OpenShift-specific component readiness tiles.
+- **Component Status (via Gateway API)** — Gateway, Controller, Hub, EDA, Redis status, and Redis mode (`standalone` / `cluster`) from `/api/gateway/v1/status/` via the Infinity datasource.
+- **Platform Reachability & Mesh Nodes** — Gateway/API reachability inferred from Prometheus `up`; counts of Controller, Execution, and Hop nodes from `awx_instance_info`; registered-node table; capacity and remaining capacity by `node_type`.
+- **Data Services (Controller-observed)** — PostgreSQL Accessible / Health from `awx_database_connections_total` and latency gauges; Redis Reachable and event queue depth from `callback_receiver_events_queue_size_redis` (complements Infinity Redis status/mode).
 - **Jobs Status** — Running, Pending, Failed jobs, Blocked Tasks, and Consumed Capacity with time-series breakdown.
-- **Latency** — Gateway/API processing time, PostgreSQL transaction latency, and Task Manager execution time.
+- **Latency** — Controller processing time, PostgreSQL transaction latency (uses **Event Processing Avg**, not the misleading cumulative “Saving Events to DB” metric), and Task Manager execution time.
 - **DB Connections** — Active PostgreSQL connections from the Controller metrics endpoint.
 - **Event Processing** — Redis queue depth, in-memory events, and average event processing time.
 
-This dashboard is **standalone JSON only** (no GrafanaDashboard CR). Import it into any Grafana instance connected to a Prometheus server scraping the AAP metrics endpoint.
+**Scope:** Gateway, Controller, Hub, EDA, and Redis status/mode are covered via Infinity + `/api/gateway/v1/status/`. Mesh nodes (control, hybrid, execution, hop), jobs, latency, and Controller-observed PostgreSQL/Redis queue depth use Prometheus `/api/controller/v2/metrics/`.
+
+This dashboard is **standalone JSON only** (no GrafanaDashboard CR). Import it into any Grafana instance with a Prometheus datasource (metrics scrape) and an Infinity datasource (Gateway status API).
 
 See [Containerized Deployment (RHEL)](#containerized-deployment-rhel) for setup instructions.
+
+### AAP - Health & Monitoring (Containerized, json_exporter)
+
+Same panels as the Infinity Containerized dashboard, but Component Status comes from **json_exporter → Prometheus** instead of the Grafana Infinity plugin. Deploy json_exporter on the Gateway VM; Prometheus scrapes it; Grafana uses only a Prometheus datasource.
+
+- **Component Status (via json_exporter)** — Gateway, Controller, Hub, EDA, Redis status, and Redis mode from `aap_gateway_status_up` / `aap_controller_status_up` / `aap_hub_status_up` / `aap_eda_status_up` / `aap_redis_info_up` (parsed from `/api/gateway/v1/status/`).
+- All other rows match the Infinity Containerized dashboard (mesh nodes, data services, jobs, latency, DB connections, event processing).
+
+**Scope:** Same coverage as the Infinity variant. Requires json_exporter on the Gateway VM (see [json_exporter/README.md](json_exporter/README.md)). No Infinity plugin required.
+
+Dashboard file (also under `json_exporter/` for download with the config):
+
+```
+json_exporter/grafana-aap-health-containerized-json-exporter-dashboard.json
+common/base/dashboards/grafana-aap-health-containerized-json-exporter-dashboard.json
+```
+
+### AAP - Health & Monitoring (Containerized, Prometheus-only)
+
+Same panels as the Containerized dashboard above **minus** the Component Status row. Uses **Prometheus only** — no Infinity plugin and no json_exporter required.
+
+- **Platform Reachability & Mesh Nodes** — Gateway/API reachability inferred from Prometheus `up`; Controller, Execution, and Hop node counts; registered-node table; capacity by node.
+- **Data Services (Controller-observed)** — PostgreSQL Accessible / Health; Redis Reachable and event queue depth.
+- **Jobs Status** — Running, Pending, Failed, Blocked, Consumed Capacity, time-series breakdown.
+- **Latency** — Controller processing time, PostgreSQL transaction latency, Task Manager execution time.
+- **DB Connections** — Active PostgreSQL connections.
+- **Event Processing** — Redis queue depth, in-memory events, average event processing time.
+
+**Scope:** Controller and registered mesh nodes only. No Gateway/Hub/EDA/Redis status or mode. Use this when neither Infinity nor json_exporter is available.
+
+This dashboard is **standalone JSON only**. Import it into any Grafana instance with a Prometheus datasource.
+
+| Containerized option | Component Status (Gateway/Hub/EDA/Redis) | Extra requirement |
+|----------------------|------------------------------------------|-------------------|
+| **Infinity** | Yes (Grafana Infinity → Gateway API) | Infinity datasource plugin |
+| **json_exporter** | Yes (json_exporter → Prometheus) | json_exporter on Gateway VM |
+| **Prometheus-only** | No | None |
 
 ### AAP - Jobs
 
@@ -174,6 +219,7 @@ aap-monitoring/
 │   ├── rbac/              # Namespace, ClusterRoles, RoleBindings
 │   ├── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
 │   └── coo/               # MonitoringStack, KSM ServiceMonitor, cAdvisor ScrapeConfig
+├── json_exporter/         # Config, deploy guide, and dashboard for Gateway status via json_exporter
 ├── overlays/aap-grafana/  # User-Workload Monitoring path
 │   ├── dashboards/        # Deploys auth + dashboards with namespace override
 │   ├── grafana-instance/  # Deploys core with user role and datasource patches
@@ -1254,22 +1300,77 @@ oc apply -k overlays/coo/dashboards/
 
 ## **Containerized Deployment (RHEL)**
 
-This section covers monitoring AAP 2.5 running as a **containerized deployment on RHEL** (podman). Unlike the OpenShift paths above, there is no Kubernetes, so `kube_deployment_*`, `kube_statefulset_*`, and `container_*` metrics are not available. Instead, use the standalone **AAP - Health & Monitoring (Containerized)** dashboard, which relies only on `awx_*` and controller metrics exposed at `/api/controller/v2/metrics/`.
+This section covers monitoring AAP 2.5/2.6 running as a **containerized deployment on RHEL** (podman). Unlike the OpenShift paths above, there is no Kubernetes, so `kube_deployment_*`, `kube_statefulset_*`, and `container_*` metrics are not available. Use one of the standalone Containerized Health dashboards:
+
+| Dashboard | Component Status source | File |
+|-----------|-------------------------|------|
+| **Infinity** | Grafana Infinity → `/api/gateway/v1/status/` | `grafana-aap-health-containerized-dashboard.json` |
+| **json_exporter** | json_exporter → Prometheus (`aap_gateway_status_up` / `aap_controller_status_up` / `aap_hub_status_up` / `aap_eda_status_up` / `aap_redis_info_up`) | `grafana-aap-health-containerized-json-exporter-dashboard.json` |
+| **Prometheus-only** | None (Controller/mesh metrics only) | `grafana-aap-health-containerized-prom-only-dashboard.json` |
+
+For the **json_exporter** option, deploy the exporter on the Gateway VM and hand the scrape endpoint to your Prometheus team — see [json_exporter/README.md](json_exporter/README.md).
+
+### Monitoring Scope & Limitations
+
+Containerized AAP Gateway status JSON uses a **list** under `services` (not a map). Typical shape:
+
+```json
+{
+  "status": "good",
+  "services": [
+    { "service_name": "controller", "status": "good" },
+    { "service_name": "hub", "status": "good" },
+    { "service_name": "eda", "status": "good" },
+    {
+      "service_name": "redis",
+      "status": "good",
+      "response": { "status": "good", "mode": "standalone", "ping": true }
+    }
+  ]
+}
+```
+
+Overall / platform status is the top-level `status` field (there is usually no `service_name: gateway` entry).
+
+| Target | Covered? | How |
+|--------|----------|-----|
+| **Gateway / platform** | Yes* | Infinity **or** json_exporter → top-level `status` from `/api/gateway/v1/status/`; Prometheus `up` also indicates Controller scrape reachability |
+| **Controller** | Yes | Status via Infinity/json_exporter (`service_name=controller`) + full `awx_*` / `task_manager_*` / `callback_receiver_*` metrics |
+| **Execution / Hop nodes** | Yes | Registered mesh nodes via `awx_instance_info` / capacity with `node_type` |
+| **Hub** | Yes* | Infinity **or** json_exporter (`service_name=hub`); N/A if Hub is not installed |
+| **EDA** | Yes* | Infinity **or** json_exporter (`service_name=eda`); N/A if EDA is not installed |
+| **Redis** | Yes* | Infinity/json_exporter status + `response.mode`; Prometheus queue depth via `callback_receiver_events_queue_size_redis` |
+| **PostgreSQL** | Partial | Controller-observed connections + latency (`awx_database_connections_total`, commit/event processing gauges). Not an independent Grafana `SELECT 1` probe. |
+
+\* Gateway/Hub/EDA/Redis status and Redis mode require either the **Infinity** dashboard or the **json_exporter** dashboard. The Prometheus-only dashboard does not include those panels.
+
+Verify the Gateway status API outside Grafana if needed:
+
+```bash
+curl -k -H "Authorization: Bearer <token>" \
+  https://<gateway_host>/api/gateway/v1/status/
+```
+
+You should see top-level `status` plus a `services` **array** of objects with `service_name` / `status` (Redis may include `response.mode`).
 
 ### Prerequisites (Containerized)
 
-- A running AAP 2.5 containerized installation on RHEL
-- Prometheus installed on a host that can reach the AAP Gateway (standalone or containerized)
-- Grafana installed and connected to the Prometheus instance as a datasource
-- An OAuth2 token from the AAP Controller for Prometheus to authenticate
+- A running AAP 2.5/2.6 containerized installation on RHEL
+- Prometheus installed on a host that can reach the AAP Gateway (and, for json_exporter, the Gateway VM port **7979**)
+- Grafana installed with a Prometheus datasource connected to that Prometheus instance
+- Depending on the dashboard option:
+  - **Infinity**: Infinity datasource plugin configured against the AAP Gateway with a Bearer token
+  - **json_exporter**: json_exporter deployed on the Gateway VM ([json_exporter/README.md](json_exporter/README.md)); no Infinity plugin
+  - **Prometheus-only**: no extra components
+- An OAuth2 / personal access token from AAP (read scope) for Prometheus Controller scrape auth (and for Infinity or json_exporter Gateway API auth)
 
 ### Prometheus Setup
 
 **1. Create an OAuth2 token in AAP**
 
-Create a personal access token (PAT) for a user with at least `System Auditor` role in the AAP Controller. Go to **Users → <user> → Tokens → Create Token**, select scope `read`, and copy the token value.
+Create a personal access token (PAT) for a user with at least `System Auditor` role. In the UI: **Users → <user> → Tokens → Create Token**, select scope `read`, and copy the token value.
 
-Alternatively, use the API:
+Alternatively, use the API (Controller path; on some AAP 2.5+ installs you can also use `POST /api/gateway/v1/tokens/`):
 
 ```bash
 curl -k -X POST https://<gateway_host>/api/controller/v2/tokens/ \
@@ -1316,29 +1417,49 @@ This should return one time series per controller instance with labels like `hos
 
 In Grafana, go to **Configuration → Data Sources → Add data source → Prometheus** and enter the Prometheus server URL (e.g., `http://prometheus-host:9090`).
 
-**2. Import the containerized Health dashboard**
+**2. (Infinity option only) Add the Infinity datasource in Grafana**
 
-The dashboard file is located at:
+Install the **Infinity** plugin (`yesoreyeram-infinity-datasource`) if it is not already available, then add a datasource:
+
+- **URL**: `https://<gateway_host>` (include port if non-default, e.g. `:8443`)
+- **Auth**: Bearer token (same read-scoped AAP token used for Prometheus, or a dedicated token)
+- **TLS**: allow insecure / skip verify only if using self-signed certs
+
+The Component Status panels query the relative path `/api/gateway/v1/status/` against this base URL.
+
+Skip this step for the **json_exporter** or **Prometheus-only** dashboards.
+
+**3. (json_exporter option) Deploy json_exporter and ask Prometheus to scrape it**
+
+Follow [json_exporter/README.md](json_exporter/README.md). Hand this endpoint to the Prometheus team (replace `<gateway_host>`):
 
 ```
-common/base/dashboards/grafana-aap-health-containerized-dashboard.json
+http://<gateway_host>:7979/probe?module=aap_gateway&target=https://localhost/api/gateway/v1/status/
 ```
 
-In Grafana, go to **Dashboards → Import → Upload JSON file** and select the file above. When prompted, select the Prometheus datasource you created in step 1.
+**4. Import a containerized Health dashboard**
 
-The dashboard will appear under its default title **AAP - Health & Monitoring (Containerized)**.
+| Option | File |
+|--------|------|
+| Infinity | `common/base/dashboards/grafana-aap-health-containerized-dashboard.json` |
+| json_exporter | `json_exporter/grafana-aap-health-containerized-json-exporter-dashboard.json` (same file also in `common/base/dashboards/`) |
+| Prometheus-only | `common/base/dashboards/grafana-aap-health-containerized-prom-only-dashboard.json` |
 
-**3. Template variables**
+In Grafana, go to **Dashboards → Import → Upload JSON file** and select the file above. When prompted:
 
-The dashboard provides three template variables at the top:
+- select the **Prometheus** datasource for `$datasource`
+- for the Infinity dashboard only, also select the **Infinity** datasource for `$status_datasource`
+
+**5. Template variables**
 
 | Variable | Purpose |
 |----------|---------|
 | **Data Source** | Selects which Prometheus datasource to query |
 | **Service** | Filters by the Prometheus `job` label (matches `job_name` from scrape config) |
 | **Instance** | Filters by the Prometheus `instance` label (the `host:port` of the scrape target) |
+| **Status Data Source** | Infinity dashboard only — selects the Infinity datasource |
 
 
 ## **Conclusion**
 
-This repository provides monitoring for Ansible Automation Platform across three deployment models: **User-Workload Monitoring** and **Cluster Observability Operator** for OpenShift, and a **Containerized (RHEL)** path for podman-based installations. The OpenShift paths deliver the full Grafana dashboard suite — **Overview**, **Health & Monitoring**, and **Jobs** — covering component health, service accessibility, job status, latency, resource consumption, and per-job / per-host drill-down against the Controller PostgreSQL database. The containerized path provides a standalone **Health & Monitoring (Containerized)** dashboard using only `awx_*` and controller metrics from the AAP metrics endpoint.
+This repository provides monitoring for Ansible Automation Platform across three deployment models: **User-Workload Monitoring** and **Cluster Observability Operator** for OpenShift, and a **Containerized (RHEL)** path for podman-based installations. The OpenShift paths deliver the full Grafana dashboard suite — **Overview**, **Health & Monitoring**, and **Jobs** — covering component health, service accessibility, job status, latency, resource consumption, and per-job / per-host drill-down against the Controller PostgreSQL database. The containerized path provides three standalone Health dashboard options: **Infinity**, **json_exporter**, or **Prometheus-only**, all built on Prometheus `awx_*` / controller metrics from `/api/controller/v2/metrics/`, with optional Gateway/Hub/EDA/Redis status from `/api/gateway/v1/status/`.
