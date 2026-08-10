@@ -167,9 +167,10 @@ Same panels as the Infinity Containerized dashboard, but Component Status comes 
 
 **Scope:** Same coverage as the Infinity variant. Requires json_exporter on the Gateway VM (see [json_exporter/README.md](json_exporter/README.md)). No Infinity plugin required.
 
-Dashboard file:
+Dashboard file (also under `json_exporter/` for download with the config):
 
 ```
+json_exporter/grafana-aap-health-containerized-json-exporter-dashboard.json
 common/base/dashboards/grafana-aap-health-containerized-json-exporter-dashboard.json
 ```
 
@@ -218,7 +219,7 @@ aap-monitoring/
 │   ├── rbac/              # Namespace, ClusterRoles, RoleBindings
 │   ├── servicemonitor/    # AAP ServiceMonitor for Prometheus metrics scraping
 │   └── coo/               # MonitoringStack, KSM ServiceMonitor, cAdvisor ScrapeConfig
-├── json_exporter/         # Config + deploy guide for Gateway status via json_exporter
+├── json_exporter/         # Config, deploy guide, and dashboard for Gateway status via json_exporter
 ├── overlays/aap-grafana/  # User-Workload Monitoring path
 │   ├── dashboards/        # Deploys auth + dashboards with namespace override
 │   ├── grafana-instance/  # Deploys core with user role and datasource patches
@@ -1421,7 +1422,7 @@ http://<gateway_host>:7979/probe?module=aap_gateway&target=https://localhost/api
 | Option | File |
 |--------|------|
 | Infinity | `common/base/dashboards/grafana-aap-health-containerized-dashboard.json` |
-| json_exporter | `common/base/dashboards/grafana-aap-health-containerized-json-exporter-dashboard.json` |
+| json_exporter | `json_exporter/grafana-aap-health-containerized-json-exporter-dashboard.json` (same file also in `common/base/dashboards/`) |
 | Prometheus-only | `common/base/dashboards/grafana-aap-health-containerized-prom-only-dashboard.json` |
 
 In Grafana, go to **Dashboards → Import → Upload JSON file** and select the file above. When prompted:

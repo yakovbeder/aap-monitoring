@@ -44,9 +44,11 @@ aap_redis_info_up{mode="standalone",status="good"} 1
 
 Metric names end with `_up` because the config uses `values.up: 1`.
 
-Use these metrics with the dashboard:
+Use these metrics with the dashboard in this folder:
 
-`common/base/dashboards/grafana-aap-health-containerized-json-exporter-dashboard.json`
+`grafana-aap-health-containerized-json-exporter-dashboard.json`
+
+(Same dashboard also lives under `common/base/dashboards/` for the main dashboard suite.)
 
 ## Prerequisites
 
@@ -178,4 +180,5 @@ This is the standard multi-target exporter pattern (same idea as blackbox_export
 | File | Purpose |
 |------|---------|
 | [aap-gateway-status.yml](aap-gateway-status.yml) | json_exporter module config |
-| [../common/base/dashboards/grafana-aap-health-containerized-json-exporter-dashboard.json](../common/base/dashboards/grafana-aap-health-containerized-json-exporter-dashboard.json) | Grafana dashboard that queries these metrics |
+| [grafana-aap-health-containerized-json-exporter-dashboard.json](grafana-aap-health-containerized-json-exporter-dashboard.json) | Grafana dashboard that queries these metrics |
+| [README.md](README.md) | Deploy guide and Prometheus scrape handoff |
